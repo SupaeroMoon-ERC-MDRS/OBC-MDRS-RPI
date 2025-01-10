@@ -1,0 +1,58 @@
+# General Robot Configuration
+robot_name: "rpi_MDRS"
+robot_type: "Mobile Robot"
+robot_description: "A description of the robot's configuration."
+
+# # Sensor Configuration (e.g., LiDAR, cameras, IMU)
+# sensors:
+#   lidar:
+#     topic: "/scan"
+#     frame_id: "laser_frame"
+#     range_min: 0.1  # Minimum distance in meters
+#     range_max: 10.0 # Maximum distance in meters
+#     angle_min: -1.5708  # Start angle in radians (-90 degrees)
+#     angle_max: 1.5708   # End angle in radians (90 degrees)
+#     resolution: 0.01    # Angle resolution in radians
+
+#   imu:
+#     topic: "/imu"
+#     frame_id: "imu_frame"
+#     update_rate: 100  # Hz
+
+#   camera:
+#     topic: "/camera/image_raw"
+#     frame_id: "camera_frame"
+#     resolution: [640, 480]  # Width x Height in pixels
+#     update_rate: 30  # Hz
+
+# Motor/Actuator Configuration
+actuators:
+  left_motor:
+    topic: "/left_motor/command"
+    type: "velocity"
+    max_speed: 1.0  # Maximum speed in m/s
+
+  right_motor:
+    topic: "/right_motor/command"
+    type: "velocity"
+    max_speed: 1.0  # Maximum speed in m/s
+
+# Controller Parameters
+controller:
+  type: "diff_drive"
+  wheel_radius: 0.1  # Wheel radius in meters
+  wheel_base: 0.5    # Distance between left and right wheels in meters
+  max_linear_speed: 1.0  # Maximum linear speed in m/s
+  max_angular_speed: 1.0 # Maximum angular speed in rad/s
+
+# Robot Localization Parameters (e.g., for EKF or particle filter)
+localization:
+  odom_frame: "odom"
+  base_frame: "base_link"
+  update_rate: 10  # Hz
+  covariance: 0.01
+
+
+# General Robot Parameters
+robot_mass: 5.0  # Mass of the robot in kg
+robot_max_weight: 10.0  # Max weight capacity in kg
