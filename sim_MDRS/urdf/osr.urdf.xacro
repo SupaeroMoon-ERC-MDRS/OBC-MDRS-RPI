@@ -20,22 +20,22 @@
       <color rgba="0.5451 0.2706 0.0745 1"/>
     </material>
 
-    <xacro:include filename="$(find rpi_MDRS)/urdf/gazebo.urdf.xacro"/>
-    <xacro:include filename="$(find rpi_MDRS)/urdf/insert_transmission.urdf.xacro"/>
+    <xacro:include filename="$(find sim_MDRS)/urdf/gazebo.urdf.xacro"/>
+    <xacro:include filename="$(find sim_MDRS)/urdf/insert_transmission.urdf.xacro"/>
 
     <link name="base_footprint"/>
     <link name="base_link">
         <collision>
             <origin rpy="0 0 0" xyz="0 0 0.0"/>
             <geometry>
-                <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/body.stl"/>
+                <mesh filename="file://$(find sim_MDRS)/urdf/meshes/body.stl"/>
             </geometry>
         </collision>
 
         <visual>
             <origin rpy="0 0 0" xyz="0 0 0.0"/>
             <geometry>
-                <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/body.stl"/>
+                <mesh filename="file://$(find sim_MDRS)/urdf/meshes/body.stl"/>
             </geometry>
             <material name="brown"/>
         </visual>
@@ -60,14 +60,14 @@
         <collision>
             <origin rpy="0 0 -3.14" xyz="0 0 0.0"/>
             <geometry>
-                <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/box_link.stl"/>
+                <mesh filename="file://$(find sim_MDRS)/urdf/meshes/box_link.stl"/>
             </geometry>
         </collision>
 
         <visual>
             <origin rpy="0 0 -3.14" xyz="0 0 0"/>
             <geometry>
-                <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/box_link.stl"/>
+                <mesh filename="file://$(find sim_MDRS)/urdf/meshes/box_link.stl"/>
             </geometry>
             <material name="silver"/>
         </visual>
@@ -91,14 +91,14 @@
             <collision>
                 <origin rpy="0 0.2 0" xyz="0 0 0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/arm.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/arm.stl"/>
                 </geometry>
             </collision>
 
             <visual>
                 <origin rpy="0 0.2 0" xyz="0 0 0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/arm.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/arm.stl"/>
                 </geometry>
                 <material name="silver"/>
             </visual>
@@ -126,14 +126,14 @@
             <collision>
                 <origin rpy="0 0 ${origin}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/turn_${prefix}.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/turn_${prefix}.stl"/>
                 </geometry>
             </collision>
 
             <visual>
                 <origin rpy="0 0 ${origin}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/turn_${prefix}.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/turn_${prefix}.stl"/>
                 </geometry>
                 <material name="silver"/>
             </visual>
@@ -161,13 +161,13 @@
             <collision>
                 <origin rpy="0 0 1.57" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/body_axis.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/body_axis.stl"/>
                 </geometry>
             </collision>
             <visual>
                 <origin rpy="0 0 1.57" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/body_axis.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/body_axis.stl"/>
                 </geometry>
                 <material name="silver"/>
             </visual>
@@ -194,14 +194,14 @@
             <collision>
                 <origin rpy="0 0 0" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/rockerbogie_middle_1.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/rockerbogie_middle_1.stl"/>
                 </geometry>
             </collision>
 
             <visual>
                 <origin rpy="0 0 0" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/rockerbogie_middle_1.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/rockerbogie_middle_1.stl"/>
                 </geometry>
                 <material name="silver"/>
             </visual>
@@ -226,14 +226,14 @@
             <collision>
                 <origin rpy="0 0 0" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/rockerbogie_front_1.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/rockerbogie_front_1.stl"/>
                 </geometry>
             </collision>
 
             <visual>
                 <origin rpy="0 0 0" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/rockerbogie_front_1.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/rockerbogie_front_1.stl"/>
                 </geometry>
                 <material name="silver"/>
             </visual>
@@ -264,14 +264,14 @@
             <collision>
                 <origin rpy="0 0 ${dir*-1.57}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel_link_left_2.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel_link_left_2.stl"/>
                 </geometry>
             </collision>
 
             <visual>
                 <origin rpy="0 0 ${dir*-1.57}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel_link_left_2.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel_link_left_2.stl"/>
                 </geometry>
                 <material name="silver"/>
             </visual>
@@ -296,14 +296,14 @@
             <collision>
                 <origin rpy="${origin} 0 ${-dir*1.57}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel_middle_left.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel_middle_left.stl"/>
                 </geometry>
             </collision>
 
             <visual>
                 <origin rpy="${origin} 0 ${-dir*1.57}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel_middle_left.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel_middle_left.stl"/>
                 </geometry>
                 <material name="silver"/>
             </visual>
@@ -328,14 +328,14 @@
             <collision>
                 <origin rpy="0 0 ${-dir*1.57}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel_link_left_2.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel_link_left_2.stl"/>
                 </geometry>
             </collision>
 
             <visual>
                 <origin rpy="0 0 ${-dir*1.57}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel_link_left_2.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel_link_left_2.stl"/>
                 </geometry>
                 <material name="silver"/>
             </visual>
@@ -368,7 +368,7 @@
             <collision>
                 <origin rpy="-1.57 0 ${origin}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel.stl"/>
                 </geometry>
                 <surface>
                     <friction>
@@ -383,7 +383,7 @@
             <visual>
                 <origin rpy="-1.57 0 ${origin}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel.stl"/>
                 </geometry>
                 <material name="black"/>
             </visual>
@@ -408,7 +408,7 @@
             <collision>
                 <origin rpy="-1.57 0 ${origin}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel.stl"/>
                 </geometry>
                 <surface>
                     <friction>
@@ -423,7 +423,7 @@
             <visual>
                 <origin rpy="-1.57 0 ${origin}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel.stl"/>
                 </geometry>
                 <material name="black"/>
             </visual>
@@ -447,7 +447,7 @@
             <collision>
                 <origin rpy="-1.57 0 ${origin}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel.stl"/>
                 </geometry>
                 <surface>
                     <friction>
@@ -462,7 +462,7 @@
             <visual>
                 <origin rpy="-1.57 0 ${origin}" xyz="0 0 0.0"/>
                 <geometry>
-                    <mesh filename="file://$(find rpi_MDRS)/urdf/meshes/wheel.stl"/>
+                    <mesh filename="file://$(find sim_MDRS)/urdf/meshes/wheel.stl"/>
                 </geometry>
                 <material name="black"/>
             </visual>

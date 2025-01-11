@@ -21,7 +21,7 @@ def generate_launch_description():
              )
     
     osr_urdf_path = os.path.join(
-        get_package_share_directory('rpi_MDRS'))
+        get_package_share_directory('sim_MDRS'))
     
     xacro_file = os.path.join(osr_urdf_path,
                               'urdf',
@@ -42,11 +42,11 @@ def generate_launch_description():
     #     package='controller_manager',
     #     executable='ros2_control_node',
     #     output='screen',
-    #     parameters=[os.path.join(get_package_share_directory('rpi_MDRS'), 'config', 'controller_velocity.yaml')]
+    #     parameters=[os.path.join(get_package_share_directory('sim_MDRS'), 'config', 'controller_velocity.yaml')]
     # )
 
     controller_spawn = Node(
-        package='rpi_MDRS',
+        package='sim_MDRS',
         executable='osr_controller',
         output='screen'
     )

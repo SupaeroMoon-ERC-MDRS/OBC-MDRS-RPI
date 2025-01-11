@@ -1,5 +1,5 @@
 # General Robot Configuration
-robot_name: "rpi_MDRS"
+robot_name: "sim_MDRS"
 robot_type: "Mobile Robot"
 robot_description: "A description of the robot's configuration."
 

@@ -126,7 +126,7 @@
 
   <gazebo>
     <plugin filename="libgazebo_ros2_control.so" name="gazebo_ros2_control">
-      <parameters>$(find rpi_MDRS)/config/controller_velocity.yaml</parameters>
+      <parameters>$(find sim_MDRS)/config/controller_velocity.yaml</parameters>
     </plugin>
   </gazebo>
 
