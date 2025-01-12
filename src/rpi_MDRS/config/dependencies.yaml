@@ -1,0 +1,12 @@
+dependencies:
+  - python3-colcon-common-extensions
+  - ros-humble-rviz2
+  - ros-humble-controller-manager
+  - ros-humble-robot-state-publisher
+  - ros-humble-joint-state-publisher
+  - ros-humble-joint-state-publisher-gui
+  - ros-humble-gazebo-ros-pkgs
+  - ros-humble-trajectory-msgs
+  - ros-humble-velocity-controllers
+  - ros-humble-joint-trajectory-controller
+  - ros-humble-gazebo-ros2-control-demos
