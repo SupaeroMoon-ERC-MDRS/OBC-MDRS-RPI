@@ -21,7 +21,7 @@ def generate_launch_description():
              )
     
     osr_urdf_path = os.path.join(
-        get_package_share_directory('rpi_MDRS'))
+        get_package_share_directory('sim_mdrs'))
     
     xacro_file = os.path.join(osr_urdf_path,
                               'urdf',
@@ -41,7 +41,7 @@ def generate_launch_description():
 
 
     controller_spawn = Node(
-        package='rpi_MDRS',
+        package='sim_mdrs',
         executable='osr_controller',
         output='screen'
     )

@@ -1,6 +1,6 @@
 from setuptools import setup
 from glob import glob
-package_name = 'rpi_MDRS'
+package_name = 'sim_mdrs'
 
 setup(
     name=package_name,
@@ -18,12 +18,12 @@ setup(
     zip_safe=True,
     author='Your Name',
     author_email='your_email@example.com',
-    description='The rpi_MDRS package for robot control',
+    description='The sim_mdrs package for robot control',
     license='Apache-2.0',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'robot_node = rpi_MDRS.robot_node:main',
+            'robot_node = sim_mdrs.robot_node:main',
         ],
     },
 )

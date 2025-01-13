@@ -5,8 +5,17 @@ This repository will house the main files to go on the raspberry pi for the MDRS
 
 Installation:
 This repository is intended for use with ROS2 Humble.
-To install dependencies, run rosdep install --from-paths . --ignore-src -r -y -f src/rpi_MDRS/config/dependencies.yaml
+To install dependencies, run rosdep install --from-paths . --ignore-src -r -y -f src/sim_mdrs/config/dependencies.yaml
 
+
+Simulation:
+from home directory:
+>>> colcon build
+>>> source install/setup.bash
+>>> ros2 launch sim_mdrs mdrs.launch.py
+
+To drive around, open a new terminal (leave gazebo running) and run:
+>>> ros2 run teleop_twist_keyboard teleop_twist_keyboard
 
 Do this later when setting up the rpi :
 Setting up correct names and permissions for USB ports [Only perform this on RPi]
