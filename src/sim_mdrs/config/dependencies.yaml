@@ -10,3 +10,6 @@ dependencies:
   - ros-humble-velocity-controllers
   - ros-humble-joint-trajectory-controller
   - ros-humble-gazebo-ros2-control-demos
+  - ros-humble-teleop-tools 
+  - ros-humble-key-teleop
+  - ros-$ROSDISTRO-tf-transformations

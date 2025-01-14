@@ -36,7 +36,7 @@ private:
 
     #define d1 0.177 // Distance from the center to the front-left wheel along the x-axis
     #define d2 0.310 // Distance from the center to the front-left wheel along the y-axis
-    #define d3 0.274 // Distance from the center to the front-rear wheels along the y-axis
+    #define d3 0.274 // Distance from the center to the rear wheels along the y-axis
     #define d4 0.253 // Distance from the center to the center wheel along the x-axis
 
     double theta = 0;
@@ -53,7 +53,8 @@ private:
     geometry_msgs::msg::Twist pri_velocity;
 
 
-    double fl_vel, fr_vel, ml_vel, mr_vel, rl_vel, rr_vel;
+    // double fl_vel, fr_vel, ml_vel, mr_vel, rl_vel, rr_vel;
+    double left_vel, right_vel
     double current_dl, dl, pre_dl;
     double x_postion, y_postion;
 
@@ -77,9 +78,6 @@ public:
         joint_sub = this->create_subscription<sensor_msgs::msg::JointState>(
             "joint_states", 1, std::bind(&Controller::jointStateCallback, this, std::placeholders::_1));
 
-        imu_sub = this->create_subscription<sensor_msgs::msg::Imu>(
-            "imu_plugin/out", 1, std::bind(&Controller::imuCallback, this, std::placeholders::_1));
-
         odom_pub = this->create_publisher<nav_msgs::msg::Odometry>("osr/odom", 10);
 
     }
@@ -99,13 +97,15 @@ public:
 
     void Odometry(double angle)
     {
-        current_dl = (fl_vel + fr_vel + ml_vel + mr_vel + rl_vel + rr_vel) * ROVER_WHEEL_RADIUS / 6;
-        dl = current_dl - pre_dl;
+        double v = (left_vel + right_vel) * ROVER_WHEEL_RADIUS / 2;
+        double w = (right_vel - left_vel) * ROVER_WHEEL_RADIUS / d4; // d4 as track width
 
-        pre_dl = current_dl;
+        dl = v * dt;
+        theta += w * dt;
 
         x_postion += dl * cos(theta);
         y_postion += dl * sin(theta);
+        
         // RCLCPP_INFO(this->get_logger(), "x_position: %f, y_position: %f", x_postion, y_postion);
 
         odom_msg.header.stamp = this->get_clock()->now();
@@ -139,18 +139,6 @@ public:
         odom_pub->publish(odom_msg);
 
        // printf("x_pos : %f\ty_pos : %f\n", x_postion,y_postion);
-    }
-
-    void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg) {
-        tf2::Quaternion quaternion;
-        tf2::fromMsg(msg->orientation, quaternion);
-
-        // Convert quaternion to roll, pitch, yaw
-        double roll, pitch, yaw;
-        tf2::Matrix3x3 m(quaternion);
-        m.getRPY(roll, pitch, yaw);
-        theta = yaw;
-
     }
 
     void msgCallback(const geometry_msgs::msg::Twist::SharedPtr msg) {
@@ -200,36 +188,25 @@ public:
     }
 
     void go_straight(const geometry_msgs::msg::Twist::SharedPtr msg) {
+
         double velocity_data = msg->linear.x / ROVER_WHEEL_RADIUS;
-
-        FL_data = velocity_data;
-        FR_data = velocity_data;
-        ML_data = velocity_data;
-        MR_data = velocity_data;
-        RL_data = velocity_data;
-        RR_data = velocity_data;
-
+        left_vel = velocity_data;
+        right_vel = velocity_data;
     }
 
     void rotate_in_place(const geometry_msgs::msg::Twist::SharedPtr& msg)
     {
-        FL_data = -float(sqrt(d1*d1+d3*d3) * msg->angular.z / ROVER_WHEEL_RADIUS);
-        RL_data = -float(sqrt(d1*d1+d2*d2) * msg->angular.z / ROVER_WHEEL_RADIUS);
+        double angular_velocity = msg->angular.z * (d4 / 2) / ROVER_WHEEL_RADIUS; // d4 assumed as track width
+        left_vel = -angular_velocity;
+        right_vel = angular_velocity;
 
-        ML_data = -float(d4 * msg->angular.z / ROVER_WHEEL_RADIUS);
-        FR_data = float(sqrt(d1*d1+d3*d3) * msg->angular.z / ROVER_WHEEL_RADIUS);
-
-        RR_data = float(d4 * msg->angular.z / ROVER_WHEEL_RADIUS);
-        MR_data = float(sqrt(d1*d1+d2*d2) * msg->angular.z / ROVER_WHEEL_RADIUS);
     }
 
     void publishVelocity() {
 
         std_msgs::msg::Float64MultiArray wheel;
 
-        wheel.data = {ML_data, MR_data,
-                        FL_data, FR_data,
-                        RL_data, RR_data};
+        wheel.data = {left_vel, right_vel, left_vel, right_vel, left_vel, right_vel};
 
         motor_wheel_pub->publish(wheel);
     }

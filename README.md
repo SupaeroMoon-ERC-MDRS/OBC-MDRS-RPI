@@ -15,7 +15,7 @@ from home directory:
 >>> ros2 launch sim_mdrs mdrs.launch.py
 
 To drive around, open a new terminal (leave gazebo running) and run:
->>> ros2 run teleop_twist_keyboard teleop_twist_keyboard
+>>> ros2 run sim_mdrs keyboard_control
 
 Do this later when setting up the rpi :
 Setting up correct names and permissions for USB ports [Only perform this on RPi]

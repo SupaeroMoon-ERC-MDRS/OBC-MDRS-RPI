@@ -42,7 +42,7 @@ def generate_launch_description():
 
     controller_spawn = Node(
         package='sim_mdrs',
-        executable='osr_controller',
+        executable='diff_controller',
         output='screen'
     )
 
