@@ -43,7 +43,7 @@
     <parent link="first_link"/>
     <child link="second_link"/>
     <origin xyz="0 0 ${second_link_length / 2}" rpy="0 0 0"/>
-    <axis xyz="0 0 1"/>
+    <axis xyz="1 0 0"/>
     <limit lower="-1.57" upper="1.57" effort="10" velocity="1"/>
   </joint>
 
@@ -61,7 +61,7 @@
     <parent link="second_link"/>
     <child link="third_link"/>
     <origin xyz="0 0 ${third_link_length / 2}" rpy="0 0 0"/>
-    <axis xyz="0 0 1"/>
+    <axis xyz="1 0 0"/>
     <limit lower="-1.57" upper="1.57" effort="10" velocity="1"/>
   </joint>
 
@@ -76,9 +76,9 @@
 
 <joint name="joint4" type="revolute">
     <parent link="third_link"/>
-    <child link="fourth_link"/>
+    <child link="arm_link"/>
     <origin xyz="0 0 ${base_link_length / 2}" rpy="0 0 0"/>
-    <axis xyz="0 0 1"/>
+    <axis xyz="1 0 0"/>
     <limit lower="-1.57" upper="1.57" effort="10" velocity="1"/>
   </joint>
 
@@ -109,7 +109,7 @@
   </link>
 
   <joint name="gripper_joint" type="fixed">
-    <parent link="fourth_link"/>
+    <parent link="arm_link"/>
     <child link="gripper_base"/>
     <origin xyz="0 0 ${fourth_link_length / 2}" rpy="0 0 0"/>
   </joint>
