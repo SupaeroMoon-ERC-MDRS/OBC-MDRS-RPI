@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  ros:
+    build:
+      context: .  # Path to the Dockerfile
+    container_name: raspberry
+    privileged: true
+    network_mode: host  # Shares the same NAT as the host
+    restart: unless-stopped
+    ports:
+      - "11311:11311"  # Expose ROS master port
+    volumes:
+      - /dev:/dev  # Access hardware devices (optional)
+      - /etc/localtime:/etc/localtime:ro  # Synchronize container with host time
