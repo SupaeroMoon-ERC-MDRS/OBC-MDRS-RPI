@@ -68,7 +68,15 @@
     </inertial>
   </link>
 
-  <!-- Second Link -->
+<joint name="joint2" type="revolute">
+    <parent link="first_link"/>
+    <child link="second_link"/>
+    <origin xyz="0 0 ${second_link_length / 2}" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="10" velocity="1"/>
+  </joint>
+
+
   <link name="second_link">
     <visual>
       <geometry>
@@ -88,7 +96,14 @@
     </inertial>
   </link>
 
-  <!-- Third Link -->
+<joint name="joint3" type="revolute">
+    <parent link="second_link"/>
+    <child link="third_link"/>
+    <origin xyz="0 0 ${third_link_length / 2}" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="10" velocity="1"/>
+  </joint>
+
   <link name="third_link">
     <visual>
       <geometry>
@@ -108,8 +123,15 @@
     </inertial>
   </link>
 
-  <!-- Fourth Link -->
-  <link name="fourth_link">
+<joint name="joint4" type="revolute">
+    <parent link="third_link"/>
+    <child link="arm_link"/>
+    <origin xyz="0 0 ${base_link_length / 2}" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit lower="-1.57" upper="1.57" effort="10" velocity="1"/>
+  </joint>
+
+  <link name="arm_link">
     <visual>
       <geometry>
         <cylinder length="${fourth_link_length}" radius="${link_radius}"/>
@@ -136,7 +158,17 @@
       </geometry>
       <material name="gray"/>
     </visual>
-    <collision>
+  </link>
+
+  <joint name="gripper_joint" type="fixed">
+    <parent link="arm_link"/>
+    <child link="gripper_base"/>
+    <origin xyz="0 0 ${fourth_link_length / 2}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- Left Gripper Finger -->
+  <link name="left_finger">
+    <visual>
       <geometry>
         <cylinder length="${gripper_length}" radius="${link_radius}"/>
       </geometry>
@@ -148,38 +180,6 @@
     </inertial>
   </link>
 
-  <!-- Joints -->
-  <joint name="joint1" type="revolute">
-    <parent link="base_link"/>
-    <child link="first_link"/>
-    <origin xyz="0 0 ${base_link_length/2}" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="10.0" velocity="1.0" lower="-1.57" upper="1.57"/>
-  </joint>
-
-  <joint name="joint2" type="revolute">
-    <parent link="first_link"/>
-    <child link="second_link"/>
-    <origin xyz="0 0 ${first_link_length/2}" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="10.0" velocity="1.0" lower="-1.57" upper="1.57"/>
-  </joint>
-
-  <joint name="joint3" type="revolute">
-    <parent link="second_link"/>
-    <child link="third_link"/>
-    <origin xyz="0 0 ${second_link_length/2}" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="10.0" velocity="1.0" lower="-1.57" upper="1.57"/>
-  </joint>
-
-  <joint name="joint4" type="revolute">
-    <parent link="third_link"/>
-    <child link="fourth_link"/>
-    <origin xyz="0 0 ${third_link_length/2}" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="10.0" velocity="1.0" lower="-1.57" upper="1.57"/>
-  </joint>
 
   <joint name="joint5" type="revolute">
     <parent link="fourth_link"/>
