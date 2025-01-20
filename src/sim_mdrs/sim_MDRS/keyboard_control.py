@@ -54,6 +54,7 @@ class TeleopKeyboard(Node):
         termios.tcsetattr(sys.stdin, termios.TCSADRAIN, self.settings)
         return key
 
+
     def run(self):
         key = self.get_key()
         print(f"Current Speed: Linear = {self.linear_speed}, Angular = {self.angular_speed}")
@@ -70,7 +71,7 @@ class TeleopKeyboard(Node):
 
             twist = Twist()
             twist.linear.x = self.linear_speed
-            twist.angular.z = self.angular_speed 
+            twist.angular.z = self.angular_speed
             self.publisher.publish(twist)
             
         elif key == ' ' or key == 's':

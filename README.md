@@ -5,7 +5,7 @@ This repository will house the main files to go on the raspberry pi for the MDRS
 
 Installation:
 This repository is intended for use with ROS2 Humble.
-To install dependencies, run rosdep install --from-paths . --ignore-src -r -y -f src/sim_mdrs/config/dependencies.yaml
+To install dependencies, run rosdep install --from-paths . --ignore-src -r -y src/sim_mdrs/config/dependencies.yaml --rosdistro foxy
 
 
 Simulation:
