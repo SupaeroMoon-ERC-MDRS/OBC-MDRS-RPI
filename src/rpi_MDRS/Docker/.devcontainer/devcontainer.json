@@ -1,0 +1,11 @@
+{
+  "name": "SupaeroMoon",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "rasp",
+  "runServices": [
+    "rasp"
+  ],
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+  "remoteUser": "ubuntu"
+}

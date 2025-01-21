@@ -12,4 +12,5 @@ dependencies:
   - ros-humble-gazebo-ros2-control-demos
   - ros-humble-teleop-tools 
   - ros-humble-key-teleop
-  - ros-$ROSDISTRO-tf-transformations
+  - ros-humble-tf-transformations
+  - ros-humble-xacro
