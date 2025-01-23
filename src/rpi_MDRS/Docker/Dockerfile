@@ -39,6 +39,8 @@ RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
 
 RUN sudo mkdir -p /workspace && sudo chown -R ${USERNAME}:${USERNAME} /workspace
 
+RUN git run https://github.com/SupaeroMoon-ERC-MDRS/OBC-MDRS-RPI
+
 RUN python3-colcon-common-extensions \
     ros-humble-rviz2 \
     ros-humble-controller-manager \
