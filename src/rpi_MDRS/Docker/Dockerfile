@@ -39,9 +39,21 @@ RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
 
 RUN sudo mkdir -p /workspace && sudo chown -R ${USERNAME}:${USERNAME} /workspace
 
-RUN git run https://github.com/SupaeroMoon-ERC-MDRS/OBC-MDRS-RPI
+USER ${USERNAME}
 
-RUN python3-colcon-common-extensions \
+WORKDIR /workspace
+
+COPY entrypoint.sh /entrypoint.sh
+COPY bashrc /home/${USERNAME}/.bashrc
+
+
+# Set up entrypoint and default command
+ENTRYPOINT ["/bin/bash", "/entrypoint.sh"] 
+CMD ["bash"]
+
+RUN sudo git clone https://github.com/SupaeroMoon-ERC-MDRS/OBC-MDRS-RPI
+
+RUN sudo apt install -y python3-colcon-common-extensions \
     ros-humble-rviz2 \
     ros-humble-controller-manager \
     ros-humble-robot-state-publisher \
@@ -56,15 +68,3 @@ RUN python3-colcon-common-extensions \
     ros-humble-key-teleop \
     ros-humble-tf-transformations \
     ros-humble-xacro
-
-USER ${USERNAME}
-
-WORKDIR /workspace
-
-COPY entrypoint.sh /entrypoint.sh
-COPY bashrc /home/${USERNAME}/.bashrc
-
-
-# Set up entrypoint and default command
-ENTRYPOINT ["/bin/bash", "/entrypoint.sh"] 
-CMD ["bash"]
