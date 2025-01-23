@@ -50,3 +50,21 @@ COPY bashrc /home/${USERNAME}/.bashrc
 # Set up entrypoint and default command
 ENTRYPOINT ["/bin/bash", "/entrypoint.sh"] 
 CMD ["bash"]
+
+RUN sudo git clone https://github.com/SupaeroMoon-ERC-MDRS/OBC-MDRS-RPI
+
+RUN sudo apt install -y python3-colcon-common-extensions \
+    ros-humble-rviz2 \
+    ros-humble-controller-manager \
+    ros-humble-robot-state-publisher \
+    ros-humble-joint-state-publisher \
+    ros-humble-joint-state-publisher-gui \
+    ros-humble-gazebo-ros-pkgs \
+    ros-humble-trajectory-msgs \
+    ros-humble-velocity-controllers \
+    ros-humble-joint-trajectory-controller \
+    ros-humble-gazebo-ros2-control-demos \
+    ros-humble-teleop-tools  \
+    ros-humble-key-teleop \
+    ros-humble-tf-transformations \
+    ros-humble-xacro
