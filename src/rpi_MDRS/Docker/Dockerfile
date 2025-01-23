@@ -39,6 +39,22 @@ RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ~/.bashrc
 
 RUN sudo mkdir -p /workspace && sudo chown -R ${USERNAME}:${USERNAME} /workspace
 
+RUN python3-colcon-common-extensions \
+    ros-humble-rviz2 \
+    ros-humble-controller-manager \
+    ros-humble-robot-state-publisher \
+    ros-humble-joint-state-publisher \
+    ros-humble-joint-state-publisher-gui \
+    ros-humble-gazebo-ros-pkgs \
+    ros-humble-trajectory-msgs \
+    ros-humble-velocity-controllers \
+    ros-humble-joint-trajectory-controller \
+    ros-humble-gazebo-ros2-control-demos \
+    ros-humble-teleop-tools  \
+    ros-humble-key-teleop \
+    ros-humble-tf-transformations \
+    ros-humble-xacro
+
 USER ${USERNAME}
 
 WORKDIR /workspace
