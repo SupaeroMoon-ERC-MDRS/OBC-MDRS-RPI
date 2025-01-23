@@ -1,16 +1,18 @@
 <?xml version="1.0"?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="my_robot_arm">
 
-  <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
-    <robotNamespace>/</robotNamespace>
-  </plugin>
+  <gazebo>
+    <plugin name="gazebo_ros2_control" filename="libgazebo_ros2_control.so">
+      <parameters>$(find sim_mdrs)/config/arm_control.yaml</parameters>
+    </plugin>
+  </gazebo>
 
   <!-- Properties -->
-  <xacro:property name="base_link_length" value="0.5"/>
-  <xacro:property name="first_link_length" value="0.5"/>
-  <xacro:property name="second_link_length" value="0.5"/>
-  <xacro:property name="third_link_length" value="0.5"/>
-  <xacro:property name="fourth_link_length" value="1.0"/>
+  <xacro:property name="base_height" value="0.0555"/>
+  <xacro:property name="B1_height" value="0.02"/>
+  <xacro:property name="B2_height" value="0.102"/>
+  <xacro:property name="arm_inf_height" value="0.228"/> <!-- will be 180 later-->
+  <xacro:property name="arm_sup_height" value="0.170"/>
   <xacro:property name="gripper_length" value="1.0"/>
   <xacro:property name="link_radius" value="0.05"/>
 
@@ -28,165 +30,223 @@
 
   <xacro:define_materials/>
 
+  <link name="world"></link>
+
+  <joint name="ground" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 0.1" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
+
   <!-- Base Link -->
   <link name="base_link">
     <visual>
       <geometry>
-        <cylinder length="${base_link_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/B1.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="gray"/>
+      <origin xyz="0 -0.03 0.0" rpy="1.5708 0 3.14"/>
     </visual>
     <collision>
       <geometry>
-        <cylinder length="${base_link_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/B1.stl" scale="0.001 0.001 0.001"/>
       </geometry>
+      <origin xyz="0 -0.03 0" rpy="1.5708 0 3.14"/>
     </collision>
-    <inertial>
-      <mass value="1.0"/>
-      <origin xyz="0 0 0"/>
-      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
-    </inertial>
+
   </link>
+
+
+  <joint name="joint1" type="fixed">
+    <parent link="base_link"/>
+    <child link="B1_fixe"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
+  </joint>
 
   <!-- First Link -->
-  <link name="first_link">
+  <link name="B1_fixe">
     <visual>
       <geometry>
-        <cylinder length="${first_link_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/B1_fixe2.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="blue"/>
+      <origin xyz="0 0 ${base_height}" rpy="1.5708 0 0"/>
     </visual>
     <collision>
       <geometry>
-        <cylinder length="${first_link_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/B1_fixe2.stl" scale="0.001 0.001 0.001"/>
       </geometry>
+      <origin xyz="0 0 ${base_height}" rpy="1.5708 0 0"/>
     </collision>
     <inertial>
-      <mass value="0.5"/>
+      <mass value="0.01"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.005" ixy="0.0" ixz="0.0" iyy="0.005" iyz="0.0" izz="0.005"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
     </inertial>
   </link>
 
-<joint name="joint2" type="revolute">
-    <parent link="first_link"/>
-    <child link="second_link"/>
-    <origin xyz="0 0 ${second_link_length / 2}" rpy="0 0 0"/>
-    <axis xyz="1 0 0"/>
+  <joint name="joint2" type="revolute">
+    <parent link="B1_fixe"/>
+    <child link="B2"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+    <axis xyz="0 0 1"/>
     <limit lower="-1.57" upper="1.57" effort="10" velocity="1"/>
   </joint>
 
 
-  <link name="second_link">
+  <link name="B2">
     <visual>
       <geometry>
-        <cylinder length="${second_link_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/B2.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="red"/>
+      <origin xyz="0 0 ${B1_height}" rpy="1.5708 0 0"/>
     </visual>
     <collision>
       <geometry>
-        <cylinder length="${second_link_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/B2.stl" scale="0.001 0.001 0.001"/>
       </geometry>
+      <origin xyz="0 0 ${B1_height}" rpy="1.5708 0 0"/>
     </collision>
     <inertial>
-      <mass value="0.5"/>
+      <mass value="0.1"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.005" ixy="0.0" ixz="0.0" iyy="0.005" iyz="0.0" izz="0.005"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.000001"/>
     </inertial>
   </link>
 
-<joint name="joint3" type="revolute">
-    <parent link="second_link"/>
-    <child link="third_link"/>
-    <origin xyz="0 0 ${third_link_length / 2}" rpy="0 0 0"/>
+  <joint name="joint3" type="revolute">
+    <parent link="B2"/>
+    <child link="arm_inf"/>
+    <origin xyz="0 0 ${B2_height}" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
     <limit lower="-1.57" upper="1.57" effort="10" velocity="1"/>
   </joint>
 
-  <link name="third_link">
+  <link name="arm_inf">
     <visual>
       <geometry>
-        <cylinder length="${third_link_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/arm_inf.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="blue"/>
+     <origin xyz="0.02 -0.02 ${2*arm_inf_height/3}" rpy="0 1.5708 0"/>
     </visual>
     <collision>
       <geometry>
-        <cylinder length="${third_link_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/arm_inf.stl" scale="0.001 0.001 0.001"/>
       </geometry>
+      <origin xyz="0.02 -0.02 ${2*arm_inf_height/3}" rpy="0 1.5708 0"/>
     </collision>
     <inertial>
-      <mass value="0.5"/>
+      <mass value="0.1"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.005" ixy="0.0" ixz="0.0" iyy="0.005" iyz="0.0" izz="0.005"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
     </inertial>
   </link>
 
-<joint name="joint4" type="revolute">
-    <parent link="third_link"/>
-    <child link="arm_link"/>
-    <origin xyz="0 0 ${base_link_length / 2}" rpy="0 0 0"/>
+  <joint name="joint4" type="revolute">
+    <parent link="arm_inf"/>
+    <child link="arm_sup"/>
+    <origin xyz="0 0 ${arm_inf_height-0.02}" rpy="0 0 0"/>
     <axis xyz="1 0 0"/>
     <limit lower="-1.57" upper="1.57" effort="10" velocity="1"/>
   </joint>
 
-  <link name="arm_link">
+  <link name="arm_sup">
     <visual>
       <geometry>
-        <cylinder length="${fourth_link_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/arm_sup.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="red"/>
+      <origin xyz="0.035 -0.02 -0.03" rpy="1.5708 1.5708 1.5708"/>
     </visual>
     <collision>
       <geometry>
-        <cylinder length="${fourth_link_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/arm_sup.stl" scale="0.001 0.001 0.001"/>
       </geometry>
+      <origin xyz="0.035 -0.02 -0.03" rpy="1.5708 1.5708 1.5708"/>
     </collision>
     <inertial>
-      <mass value="0.8"/>
+      <mass value="0.2"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.01" ixy="0.0" ixz="0.0" iyy="0.01" iyz="0.0" izz="0.01"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
     </inertial>
   </link>
 
-  <!-- Gripper Link -->
+  <joint name="joint5" type="revolute">
+    <parent link="arm_sup"/>
+    <child link="gripper"/>
+    <origin xyz="0 0 ${arm_sup_height}" rpy="0 0 0"/>
+    <axis xyz="1 0 0"/>
+    <limit effort="10.0" velocity="1.0" lower="-1.57" upper="1.57"/>
+  </joint>
+
   <link name="gripper">
     <visual>
       <geometry>
-        <cylinder length="${gripper_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/jonc_pliers.stl" scale="0.001 0.001 0.001"/>
       </geometry>
       <material name="gray"/>
+      <origin xyz="0.04 -0.02 -0.02" rpy="0 1.5708 0"/>
     </visual>
-  </link>
-
-  <joint name="gripper_joint" type="fixed">
-    <parent link="arm_link"/>
-    <child link="gripper_base"/>
-    <origin xyz="0 0 ${fourth_link_length / 2}" rpy="0 0 0"/>
-  </joint>
-
-  <!-- Left Gripper Finger -->
-  <link name="left_finger">
-    <visual>
+    <collision>
       <geometry>
-        <cylinder length="${gripper_length}" radius="${link_radius}"/>
+        <mesh filename="file://$(find sim_mdrs)/urdf/arm_meshes/jonc_pliers.stl" scale="0.001 0.001 0.001"/>
       </geometry>
+      <origin xyz="0.04 -0.02 -0.02" rpy="0 1.5708 0"/>
     </collision>
     <inertial>
-      <mass value="0.3"/>
+      <mass value="0.2"/>
       <origin xyz="0 0 0"/>
-      <inertia ixx="0.002" ixy="0.0" ixz="0.0" iyy="0.002" iyz="0.0" izz="0.002"/>
+      <inertia ixx="0.0001" ixy="0.0" ixz="0.0" iyy="0.0001" iyz="0.0" izz="0.0001"/>
     </inertial>
   </link>
 
+  <transmission name="joint2_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint2">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="joint2_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
 
-  <joint name="joint5" type="revolute">
-    <parent link="fourth_link"/>
-    <child link="gripper"/>
-    <origin xyz="0 0 ${fourth_link_length/2}" rpy="0 0 0"/>
-    <axis xyz="0 1 0"/>
-    <limit effort="10.0" velocity="1.0" lower="-1.57" upper="1.57"/>
-  </joint>
+  <transmission name="joint3_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint3">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="joint3_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="joint4_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint4">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="joint4_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <transmission name="joint5_transmission">
+    <type>transmission_interface/SimpleTransmission</type>
+    <joint name="joint5">
+      <hardwareInterface>hardware_interface/PositionJointInterface</hardwareInterface>
+    </joint>
+    <actuator name="joint5_motor">
+      <mechanicalReduction>1</mechanicalReduction>
+    </actuator>
+  </transmission>
+
+  <xacro:include filename="$(find sim_mdrs)/urdf/arm_control.urdf.xacro"/>
+
+
+
 
 </robot>
