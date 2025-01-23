@@ -6,6 +6,7 @@ from rclpy.node import Node
 
 from std_msgs.msg import Float64
 from geometry_msgs.msg import Twist
+from msgs import MoveArm #need to figure out where exactly I have to import this from
 
 class RemoteComms(Node):
 
@@ -15,6 +16,7 @@ class RemoteComms(Node):
 
         ## Create subscriptions and publishers
         self.cmd_vel_pub = self.create_publisher(msg_type=Twist,topic="/cmd_vel",qos_profile=10)
+        self.cmd_arm_pub = self.create_publisher(msg_type=MoveArm,topic="/cmd_remote_arm")
         self.telem_sub = self.create_subscription(msg_type=Float64,topic="/telemetry",qos_profile=10)
         """The queue size has been set to 10 for now, but it can be changed as necessary"""
         
@@ -45,8 +47,10 @@ class RemoteComms(Node):
         self.e_stop = False #creating emergency stop attribute so that we know when that's been pressed
 
         """Q to ask: When writing in ROS, does everything that would otherwise be a regular variable, now become an attribute? - yes, for now"""
-    
-        ##initialise speed variables - follow Emma's keyboard controls py file as template for updating and packaging as Twist
+        ## Toggle to switch between different modes
+        self.arm_mode = False #rover mode by default
+
+        ##initialise rover control variables - follow Emma's keyboard controls py file as template for updating and packaging as Twist
         self.lin_speed = 0.0
         self.ang_speed = 0.0
         
@@ -57,12 +61,21 @@ class RemoteComms(Node):
         # setting max limits
         self.max_lin_speed = 5.0
         self.max_ang_speed = 3.0
+
+        ##initialise arm control variables
+        #initial motion directions
+        self.arm_x = 0.0 #forward/back
+        self.arm_z = 0.0 #up/down
+        self.arm_theta = 0.0 #arm swivel
+        self.end_theta = 0.0 #gripper (end-vector) rotation
+        self.end_grip = False #gripper grab or not
+
         """Q for Emma - do I create a timer? - yes"""
         # Timer to run remote input method repeatedly once the Node is initialised
         self.timer = self.create_timer(0.5,self.remote_input)
 
     def remote_input(self):
-       # method to access the input message from the remote control and publish to topic
+       ## main method to access the input message from the remote control and publish to topic
         if self.e_stop:
             self.emergency_stop()
         elif not self.e_stop:
@@ -86,34 +99,95 @@ class RemoteComms(Node):
                 self.ThumbRX: self.data.thumb_right_x # int 0-255 
                 self.ThumbRY: self.data.thumb_right_y # int 0-255
 
-                # now update velocities based on new inputs
-                if self.LT:
-                    self.lin_speed += self.lin_inc
-                elif self.LB:
-                    self.lin_speed -= self.lin_inc
-                elif self.LL:
-                    self.ang_speed += self.ang_inc
-                elif self.LR:
-                    self.ang_speed -= self.ang_inc
+                if self.L1 and self.R1:
+                    self.arm_mode = not self.arm_mode
 
-                # Clamp the speeds to their maximum values
-                self.lin_speed = max(min(self.lin_speed, self.max_lin_speed), -self.max_lin_speed)
-                self.ang_speed = max(min(self.ang_speed, self.max_ang_speed), -self.max_ang_speed)
+                if not self.arm_mode:
+                    self.rover_command()
+                elif self.arm_mode:
+                    self.arm_command()
+                
+    def rover_command(self):
+        ## method to update and publish velocity commands in rover mode
+        # update velocities based on new inputs
+        if self.LT:
+            self.lin_speed += self.lin_inc
+        elif self.LB:
+            self.lin_speed -= self.lin_inc
+        elif self.LL:
+            self.ang_speed += self.ang_inc
+        elif self.LR:
+            self.ang_speed -= self.ang_inc
 
-                if self.RB: #normal stop button - values reset to zero before creating and publishing Twist
-                    self.lin_speed = 0.0
-                    self.ang_speed = 0.0
-                
-                # Twist message to store and send the current command values
-                rov_cmd = Twist()
-                rov_cmd.linear.x = self.lin_speed
-                rov_cmd.angular.z = self.ang_speed
-                self.cmd_vel_pub.publish(rov_cmd)
-                
+        # Clamp the speeds to their maximum values
+        self.lin_speed = max(min(self.lin_speed, self.max_lin_speed), -self.max_lin_speed)
+        self.ang_speed = max(min(self.ang_speed, self.max_ang_speed), -self.max_ang_speed)
+
+        if self.RB: #normal stop button - values reset to zero before creating and publishing Twist
+            self.lin_speed = 0.0
+            self.ang_speed = 0.0
+        
+        # Twist message to store and send the current command values
+        rov_cmd = Twist()
+        rov_cmd.linear.x = self.lin_speed
+        rov_cmd.angular.z = self.ang_speed
+        self.cmd_vel_pub.publish(rov_cmd)
+
+    def arm_command(self):
+        #Need to initialise within this method to set everything back to zero in every loop so we only send what buttons are pressed
+        
+        self.arm_x = 0.0 #forward/back
+        self.arm_z = 0.0 #up/down
+        self.arm_theta = 0.0 #arm swivel
+        self.end_theta = 0.0 #gripper (end-vector) rotation
+        self.end_grip = False #gripper grab or not
+
+        # Left analog stick up/down for forward/back
+        if self.ThumbLY <= 5:
+            self.arm_x = 1.0
+        elif self.ThumbLY >= 250:
+            self.arm_x = -1.0
+        # Right analog stick up/down for up/down
+        if self.ThumbRY <= 5:
+            self.arm_z = 1.0
+        elif self.ThumbRY >= 250:
+            self.arm_z = -1.0
+        # Left analog stick right/left for rotation
+        if self.ThumbLX <= 5: #left
+            self.arm_theta = 1.0 #positive usually means CCW by RH rule
+        elif self.ThumbLY >= 250: #right
+            self.arm_theta = -1.0
+        # up/down direction buttons on the left for wrist rotation
+        if self.LT:
+            self.end_theta = 1.0
+        elif self.RT:
+            self.end_theta = -1.0
+        # triangle button (right top) to grab
+        if self.RT:
+            self.end_grip = True
+
+        #stop button
+        if self.RB:
+            self.arm_x = 0.0
+            self.arm_z = 0.0 
+            self.arm_theta = 0.0 
+            self.end_theta = 0.0 
+            self.end_grip = False       
+
+        arm_cmd = MoveArm()
+        arm_cmd.move_x = self.arm_x
+        arm_cmd.move_z = self.arm_z
+        arm_cmd.swivel = self.arm_theta
+        arm_cmd.tilt = self.end_theta
+        arm_cmd.grip = self.end_grip
+        self.cmd_arm_pub.publish(arm_cmd)
+    
     def emergency_stop(self):
         """Base code for this method, to be developed further"""
         twist = Twist()
         self.cmd_vel_pub.publish(twist)
+        movearm = MoveArm()
+        self.cmd_arm_pub.publish(movearm)
 
         """Next steps to add: Toggle switch, Robotic Arm message definition, Robotic arm remote input,
         and integration of rover and robotic arm controls"""
