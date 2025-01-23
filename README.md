@@ -5,17 +5,25 @@ This repository will house the main files to go on the raspberry pi for the MDRS
 
 Installation:
 This repository is intended for use with ROS2 Humble.
-To install dependencies, run rosdep install --from-paths . --ignore-src -r -y src/sim_mdrs/config/dependencies.yaml --rosdistro foxy
+To install dependencies, run
+```bash
+rosdep install --from-paths . --ignore-src -r -y src/sim_mdrs/config/dependencies.yaml --rosdistro humble
+```
+
 
 
 Simulation:
 from home directory:
->>> colcon build
->>> source install/setup.bash
->>> ros2 launch sim_mdrs mdrs.launch.py
+```bash
+colcon build
+source install/setup.bash
+ros2 launch sim_mdrs mdrs.launch.py
+```
 
 To drive around, open a new terminal (leave gazebo running) and run:
->>> ros2 run sim_mdrs keyboard_control
+```bash
+ros2 run sim_mdrs keyboard_control
+```
 
 Do this later when setting up the rpi :
 Setting up correct names and permissions for USB ports [Only perform this on RPi]
