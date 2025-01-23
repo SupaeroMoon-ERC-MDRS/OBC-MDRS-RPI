@@ -17,10 +17,10 @@ def generate_launch_description():
                     get_package_share_directory('gazebo_ros'), 'launch'), '/gazebo.launch.py']),
              )
     
-    osr_urdf_path = os.path.join(
+    pkg_share = os.path.join(
         get_package_share_directory('sim_mdrs'))
     
-    xacro_file = os.path.join(osr_urdf_path,
+    xacro_file = os.path.join(pkg_share,
                               'urdf',
                               'arm.urdf.xacro')
     
@@ -43,7 +43,7 @@ def generate_launch_description():
         parameters=[params]
     )
 
-# Add a joint state publisher node
+    # Add a joint state publisher node
     joint_state_publisher_node = Node(
         package='joint_state_publisher',
         executable='joint_state_publisher',
@@ -52,7 +52,7 @@ def generate_launch_description():
     )
 
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
-                        arguments=['-topic', 'robot_description', '-entity', 'arm', '-x', '0', '-y', '0', '-z', '1.0'],
+                        arguments=['-topic', 'robot_description', '-entity', 'arm', '-x', '0', '-y', '0', '-z', '0'],
                         output='screen')
     
 
@@ -62,7 +62,7 @@ def generate_launch_description():
     )
 
     load_arm_state_controller = ExecuteProcess(
-        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'arm_trajectory_controller'],
+        cmd=['ros2', 'control', 'load_controller', '--set-state', 'active', 'arm_controller'],
         output='screen'
     )
 
@@ -82,7 +82,6 @@ def generate_launch_description():
                 ],
             )
         ),
-   
         gazebo,
         robot_state_publisher_node,
         spawn_entity,
