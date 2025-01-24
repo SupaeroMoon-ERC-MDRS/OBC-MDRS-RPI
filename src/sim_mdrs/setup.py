@@ -31,7 +31,8 @@ setup(
         'console_scripts': [
             'keyboard_control = sim_mdrs.keyboard_control:main',
             'keyboard_arm = sim_mdrs.keyboard_arm:main',
-            'remote_drive = sim_mdrs.remote_messages:main',
+            'remote_msgs = sim_mdrs.remote_messages:main',
+            'remote_arm = sim_mdrs.remote_arm:main',
             'diff_controller = sim_mdrs.diff_controller:main'
         ],
     },
