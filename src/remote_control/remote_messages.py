@@ -4,20 +4,22 @@ from udpcanpy import NetworkHandler, RemoteControl #to access the UPDCAN protoco
 import rclpy
 from rclpy.node import Node
 
-from std_msgs.msg import Float64
-from geometry_msgs.msg import Twist
-from msgs import MoveArm #need to figure out where exactly I have to import this from
+from std_msgs.msg import Float64, Bool
+from geometry_msgs.msg import Twist, Quaternion
+#from msgs import MoveArm #need to figure out where exactly I have to import this from
 
 class RemoteComms(Node):
 
-    def __init__(self,protocol:str = "/home/davidgmolnar/Documents/COM-2024/COM-2024-DBC/comms.dbc"): # string is placeholder to be replaced with actual path on device
+    def __init__(self,protocol:str = "comms.dbc"): # string is placeholder to be replaced with actual path on device
         super().__init__("RemoteComms") #placeholder name for now
         """TO ADD: Logger initialisation and parameter declaration (if needed)"""
 
         ## Create subscriptions and publishers
         self.cmd_vel_pub = self.create_publisher(msg_type=Twist,topic="/cmd_vel",qos_profile=10)
-        self.cmd_arm_pub = self.create_publisher(msg_type=MoveArm,topic="/cmd_remote_arm")
-        self.telem_sub = self.create_subscription(msg_type=Float64,topic="/telemetry",qos_profile=10)
+        self.cmd_arm_motion_pub = self.create_publisher(msg_type=Quaternion,topic="/cmd_move_arm",qos_profile=10)
+        self.cmd_arm_grip_pub = self.create_publisher(msg_type=Bool,topic="/cmd_move_arm",qos_profile=10)
+        #self.telem_sub = self.create_subscription(msg_type=Float64,topic="/telemetry",qos_profile=10)
+        """Need to add callback function to subscriber"""
         """The queue size has been set to 10 for now, but it can be changed as necessary"""
         
         ## Next step is to create interface with comms protocol to get remote input and store it for the node to publish
@@ -49,6 +51,7 @@ class RemoteComms(Node):
         """Q to ask: When writing in ROS, does everything that would otherwise be a regular variable, now become an attribute? - yes, for now"""
         ## Toggle to switch between different modes
         self.arm_mode = False #rover mode by default
+        ## Manually change to true to test arm control with simmed message - for Emma
 
         ##initialise rover control variables - follow Emma's keyboard controls py file as template for updating and packaging as Twist
         self.lin_speed = 0.0
@@ -92,12 +95,15 @@ class RemoteComms(Node):
                 self.RL = self.data.r_left # bool
                 self.L1 = self.data.l_shoulder # bool # L1 on PS4, LS/LB on Xbox
                 self.R1 = self.data.r_shoulder # bool # R1 on PS4, RS/RB on Xbox
-                self.L2 = self.data.l_trigger # int 0-255 # L2 on PS4, LT on Xbox
-                self.R2 = self.data.r_trigger # int 0-255 # R2 on PS4, RT on Xbox
+                self.L2 = self.data.left_trigger # int 0-255 # L2 on PS4, LT on Xbox
+                self.R2 = self.data.right_trigger # int 0-255 # R2 on PS4, RT on Xbox
                 self.ThumbLX: self.data.thumb_left_x # int 0-255
                 self.ThumbLY: self.data.thumb_left_y # int 0-255
                 self.ThumbRX: self.data.thumb_right_x # int 0-255 
                 self.ThumbRY: self.data.thumb_right_y # int 0-255
+
+                #print to debug
+                print(f"Arm mode? {self.arm_mode}")
 
                 if self.L1 and self.R1:
                     self.arm_mode = not self.arm_mode
@@ -123,10 +129,16 @@ class RemoteComms(Node):
         self.lin_speed = max(min(self.lin_speed, self.max_lin_speed), -self.max_lin_speed)
         self.ang_speed = max(min(self.ang_speed, self.max_ang_speed), -self.max_ang_speed)
 
+        #print to debug
+        print(f"speeds calculated to send: {self.lin_speed,self.ang_speed}")
+
+        ## comment out for test
         if self.RB: #normal stop button - values reset to zero before creating and publishing Twist
             self.lin_speed = 0.0
             self.ang_speed = 0.0
         
+        #print to debug
+        print(f"speeds being sent: {self.lin_speed,self.ang_speed}")
         # Twist message to store and send the current command values
         rov_cmd = Twist()
         rov_cmd.linear.x = self.lin_speed
@@ -166,7 +178,11 @@ class RemoteComms(Node):
         if self.RT:
             self.end_grip = True
 
+        #print to debug
+        print(f"arm commands to send: {self.arm_x,self.arm_z}")
+
         #stop button
+        ## Comment out for test
         if self.RB:
             self.arm_x = 0.0
             self.arm_z = 0.0 
@@ -174,22 +190,40 @@ class RemoteComms(Node):
             self.end_theta = 0.0 
             self.end_grip = False       
 
-        arm_cmd = MoveArm()
-        arm_cmd.move_x = self.arm_x
-        arm_cmd.move_z = self.arm_z
-        arm_cmd.swivel = self.arm_theta
-        arm_cmd.tilt = self.end_theta
-        arm_cmd.grip = self.end_grip
-        self.cmd_arm_pub.publish(arm_cmd)
+        #print to debug
+        print(f"arm commands being sent: {self.arm_x,self.arm_z}")
+
+        arm_cmd = Quaternion()
+        arm_cmd.x = self.arm_x #x is forward/back
+        arm_cmd.z = self.arm_z #z is up/down
+        arm_cmd.y = self.arm_theta #y is rotation
+        arm_cmd.w = self.end_theta #w is wrist/end-vector joint position
+        self.cmd_arm_motion_pub.publish(arm_cmd)
+        self.cmd_arm_grip_pub.publish(self.end_grip)
     
     def emergency_stop(self):
         """Base code for this method, to be developed further"""
         twist = Twist()
         self.cmd_vel_pub.publish(twist)
-        movearm = MoveArm()
+        movearm = Quaternion()
         self.cmd_arm_pub.publish(movearm)
+        self.cmd_arm_grip_pub.publish(False)
 
-        """Next steps to add: Toggle switch, Robotic Arm message definition, Robotic arm remote input,
-        and integration of rover and robotic arm controls"""
+    def main(args=None):
+        rclpy.init(args=args)
+        node = RemoteComms()
+
+        try:
+            rclpy.spin(node)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            node.nh.stop()
+            node.destroy_node()
+            rclpy.shutdown()
+
+    if __name__ == '__main__':
+        main()
+
+        """Next steps to add: refining code + get_logger and Telemetry"""
         """To be added later: proper error handling and emergency stop procedure"""
-

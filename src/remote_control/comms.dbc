@@ -1,0 +1,20 @@
+VERSION 0
+ 
+BO_ 15 RemoteControl: 8
+  SG_ l_top : 0|1@1+ (1,0) [0|1] ""
+  SG_ l_bottom : 1|1@1+ (1,0) [0|1] ""
+  SG_ l_right : 2|1@1+ (1,0) [0|1] ""
+  SG_ l_left : 3|1@1+ (1,0) [0|1] ""
+  SG_ r_top : 4|1@1+ (1,0) [0|1] ""
+  SG_ r_bottom : 5|1@1+ (1,0) [0|1] ""
+  SG_ r_right : 6|1@1+ (1,0) [0|1] ""
+  SG_ r_left : 7|1@1+ (1,0) [0|1] ""
+  SG_ l_shoulder : 8|1@1+ (1,0) [0|1] ""
+  SG_ r_shoulder : 9|1@1+ (1,0) [0|1] ""
+  SG_ e_stop : 10|1@1+ (1,0) [0|1] ""
+  SG_ left_trigger : 16|8@1+ (1,0) [0|255] ""
+  SG_ right_trigger : 24|8@1+ (1,0) [0|255] ""
+  SG_ thumb_left_x : 32|8@1+ (1,0) [0|255] ""
+  SG_ thumb_left_y : 40|8@1+ (1,0) [0|255] ""
+  SG_ thumb_right_x : 48|8@1+ (1,0) [0|255] ""
+  SG_ thumb_right_y : 56|8@1+ (1,0) [0|255] ""
