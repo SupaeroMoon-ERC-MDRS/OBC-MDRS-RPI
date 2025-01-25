@@ -1,8 +1,11 @@
 import roboclaw_driver as roboclaw
 import time
 import numpy as np
-import diagnostic_msgs
-import diagnostic_updater
+import logging
+# import diagnostic_updater
+import sys
+import keyboard  # Install with `pip install keyboard`
+
 
 class Struct:
     def __init__(self, **kwargs):
@@ -51,7 +54,7 @@ class EncoderOdom:
         dist = (dist_right + dist_left) / 2.0
 
         current_time = time.time()
-        d_time = (current_time - self.last_enc_time).to_sec()
+        d_time = (current_time - self.last_enc_time)
         self.last_enc_time = current_time
 
         # TODO find better what to determine going straight, this means slight deviation is accounted
@@ -93,42 +96,45 @@ class EncoderOdom:
 
 class Node:
     def __init__(self):
-
-        self.ERRORS = {0x0000: (diagnostic_msgs.msg.DiagnosticStatus.OK, "Normal"),
-                       0x0001: (diagnostic_msgs.msg.DiagnosticStatus.WARN, "M1 over current"),
-                       0x0002: (diagnostic_msgs.msg.DiagnosticStatus.WARN, "M2 over current"),
-                       0x0004: (diagnostic_msgs.msg.DiagnosticStatus.ERROR, "Emergency Stop"),
-                       0x0008: (diagnostic_msgs.msg.DiagnosticStatus.ERROR, "Temperature1"),
-                       0x0010: (diagnostic_msgs.msg.DiagnosticStatus.ERROR, "Temperature2"),
-                       0x0020: (diagnostic_msgs.msg.DiagnosticStatus.ERROR, "Main batt voltage high"),
-                       0x0040: (diagnostic_msgs.msg.DiagnosticStatus.ERROR, "Logic batt voltage high"),
-                       0x0080: (diagnostic_msgs.msg.DiagnosticStatus.ERROR, "Logic batt voltage low"),
-                       0x0100: (diagnostic_msgs.msg.DiagnosticStatus.WARN, "M1 driver fault"),
-                       0x0200: (diagnostic_msgs.msg.DiagnosticStatus.WARN, "M2 driver fault"),
-                       0x0400: (diagnostic_msgs.msg.DiagnosticStatus.WARN, "Main batt voltage high"),
-                       0x0800: (diagnostic_msgs.msg.DiagnosticStatus.WARN, "Main batt voltage low"),
-                       0x1000: (diagnostic_msgs.msg.DiagnosticStatus.WARN, "Temperature1"),
-                       0x2000: (diagnostic_msgs.msg.DiagnosticStatus.WARN, "Temperature2"),
-                       0x4000: (diagnostic_msgs.msg.DiagnosticStatus.OK, "M1 home"),
-                       0x8000: (diagnostic_msgs.msg.DiagnosticStatus.OK, "M2 home")}
+        logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+        # self.ERRORS = {0x0000: (logging.warning("Normal")),
+        #                0x0001: (logging.warning("M1 over current")),
+        #                0x0002: (logging.warning("M2 over current")),
+        #                0x0004: (logging.warning("Emergency Stop")),
+        #                0x0008: (logging.warning("Temperature1")),
+        #                0x0010: (logging.warning("Temperature2")),
+        #                0x0020: (logging.warning("Main batt voltage high")),
+        #                0x0040: (logging.warning("Logic batt voltage high")),
+        #                0x0080: (logging.warning("Logic batt voltage low")),
+        #                0x0100: (logging.warning("M1 driver fault")),
+        #                0x0200: (logging.warning("M2 driver fault")),
+        #                0x0400: (logging.warning("Main batt voltage high")),
+        #                0x0800: (logging.warning("Main batt voltage low")),
+        #                0x1000: (logging.warning("Temperature1")),
+        #                0x2000: (logging.warning("Temperature2")),
+        #                0x4000: (logging.warning("M1 home")),
+        #                0x8000: (logging.warning("M2 home"))}
         
-        self.address = 128
-        dev_name = "/dev/ttyACM0"
+        self.address = int(128)
+        dev_name = "COM3"
         baud_rate = 115200
 
+        self.robo = roboclaw.Roboclaw(dev_name, baud_rate)
+
+
         try:
-            roboclaw.Open(dev_name, baud_rate)
+            self.robo.Open()
         except Exception as e:
             print("Could not connect to Roboclaw")
             raise(e)
         
-        self.updater = diagnostic_updater.Updater()
-        self.updater.setHardwareID("Roboclaw")
-        self.updater.add(diagnostic_updater.
-                         FunctionDiagnosticTask("Vitals", self.check_vitals))
+        # self.updater = diagnostic_updater.Updater()
+        # self.updater.setHardwareID("Roboclaw")
+        # self.updater.add(diagnostic_updater.
+        #                  FunctionDiagnosticTask("Vitals", self.check_vitals))
 
         try:
-            version = roboclaw.ReadVersion(self.address)
+            version = self.robo.ReadVersion(self.address)
         except Exception as e:
             print("Problem getting roboclaw version")
             print(e)
@@ -139,8 +145,8 @@ class Node:
         else:
             print(repr(version[1]))
 
-        roboclaw.SpeedM1M2(self.address, 0, 0)
-        roboclaw.ResetEncoders(self.address)
+        self.robo.SpeedM1M2(self.address, 0, 0)
+        self.robo.ResetEncoders(self.address)
 
         self.MAX_SPEED = 2.0
         self.TICKS_PER_METER = 4342.2
@@ -162,12 +168,11 @@ class Node:
         print("Starting motor drive")
         r_time = 10
         while True:
-
-            if (time.time() - self.last_set_speed_time).to_sec() > 1:
+            if (time.time() - self.last_set_speed_time) > 1:
                 print("Did not get command for 1 second, stopping")
                 try:
-                    roboclaw.ForwardM1(self.address, 0)
-                    roboclaw.ForwardM2(self.address, 0)
+                    self.robo.ForwardM1(self.address, 0)
+                    self.robo.ForwardM2(self.address, 0)
                 except OSError as e:
                     print("Could not stop")
                     print(e)
@@ -178,17 +183,17 @@ class Node:
             status2, enc2, crc2 = None, None, None
 
             try:
-                enc1, crc1 = roboclaw.ReadEncM1(self.address)
-            except ValueError:
-                pass
+                enc1, crc1 = self.robo.ReadEncM1(self.address)
+            except ValueError as v:
+                print(f"Value Error: {v}")
             except OSError as e:
                 print("ReadEncM1 OSError: %d", e.errno)
                 print(e)
 
             try:
-                enc2, crc2 = roboclaw.ReadEncM2(self.address)
-            except ValueError:
-                pass
+                enc2, crc2 = self.robo.ReadEncM2(self.address)
+            except ValueError as v:
+                print(f"Value Error: {v}")
             except OSError as e:
                 print("ReadEncM2 OSError: %d", e.errno)
                 print(e)
@@ -200,8 +205,8 @@ class Node:
             if ('enc1' in vars()) and ('enc2' in vars()):
                 print(f" Encoders {enc1} {enc2}")
                 self.encodm.print_state(enc1, enc2)
-                self.updater.update()
-
+                # self.updater.update()
+            self.keyboard_control()
             time.sleep(r_time)
 
     def cmd_vel_callback(self, twist):
@@ -223,11 +228,11 @@ class Node:
 
         try:
             # This is a hack way to keep a poorly tuned PID from making noise at speed 0
-            if vr_ticks is 0 and vl_ticks is 0:
-                roboclaw.ForwardM1(self.address, 0)
-                roboclaw.ForwardM2(self.address, 0)
+            if vr_ticks == 0 and vl_ticks == 0:
+                self.robo.ForwardM1(self.address, 0)
+                self.robo.ForwardM2(self.address, 0)
             else:
-                roboclaw.SpeedM1M2(self.address, vr_ticks, vl_ticks)
+                self.robo.SpeedM1M2(self.address, vr_ticks, vl_ticks)
         except OSError as e:
             print("SpeedM1M2 OSError: %d", e.errno)
             print(e)
@@ -236,7 +241,7 @@ class Node:
     # TODO: Need to make this work when more than one error is raised
     def check_vitals(self, stat):
         try:
-            status = roboclaw.ReadError(self.address)[1]
+            status = self.robo.ReadError(self.address)[1]
         except OSError as e:
             print("Diagnostics OSError: %d", e.errno)
             print(e)
@@ -245,10 +250,10 @@ class Node:
         state, message = self.ERRORS[status]
         stat.summary(state, message)
         try:
-            stat.add("Main Batt V:", float(roboclaw.ReadMainBatteryVoltage(self.address)[1] / 10))
-            stat.add("Logic Batt V:", float(roboclaw.ReadLogicBatteryVoltage(self.address)[1] / 10))
-            stat.add("Temp1 C:", float(roboclaw.ReadTemp(self.address)[1] / 10))
-            stat.add("Temp2 C:", float(roboclaw.ReadTemp2(self.address)[1] / 10))
+            stat.add("Main Batt V:", float(self.robo.ReadMainBatteryVoltage(self.address)[1] / 10))
+            stat.add("Logic Batt V:", float(self.robo.ReadLogicBatteryVoltage(self.address)[1] / 10))
+            stat.add("Temp1 C:", float(self.robo.ReadTemp(self.address)[1] / 10))
+            stat.add("Temp2 C:", float(self.robo.ReadTemp2(self.address)[1] / 10))
         except OSError as e:
             print("Diagnostics OSError: %d", e.errno)
             print(e)
@@ -258,59 +263,53 @@ class Node:
     def shutdown(self):
         print("Shutting down")
         try:
-            roboclaw.ForwardM1(self.address, 0)
-            roboclaw.ForwardM2(self.address, 0)
+            self.robo.ForwardM1(self.address, 0)
+            self.robo.ForwardM2(self.address, 0)
         except OSError:
             print("Shutdown did not work trying again")
             try:
-                roboclaw.ForwardM1(self.address, 0)
-                roboclaw.ForwardM2(self.address, 0)
+                self.robo.ForwardM1(self.address, 0)
+                self.robo.ForwardM2(self.address, 0)
             except OSError as e:
                 print("Could not shutdown motors!!!!")
                 print(e)
 
+    def keyboard_control(self):
+        """
+        Allows motor testing using keyboard input.
+        - 'w' to move forward
+        - 's' to move backward
+        - 'a' to turn left
+        - 'd' to turn right
+        - 'space' to stop
+        - 'q' to quit
+        """
+        print("Keyboard control activated. Use keys to control motors:")
+        print("'w': Forward, 's': Backward, 'a': Turn left, 'd': Turn right, 'space': Stop, 'q': Quit")
 
-import keyboard  # Install with `pip install keyboard`
-
-def keyboard_control(node):
-    """
-    Allows motor testing using keyboard input.
-    - 'w' to move forward
-    - 's' to move backward
-    - 'a' to turn left
-    - 'd' to turn right
-    - 'space' to stop
-    - 'q' to quit
-    """
-    print("Keyboard control activated. Use keys to control motors:")
-    print("'w': Forward, 's': Backward, 'a': Turn left, 'd': Turn right, 'space': Stop, 'q': Quit")
-
-    try:
-        while True:
+        try:
             if keyboard.is_pressed('w'):
-                node.cmd_vel_callback(Twist(linear_x=node.MAX_SPEED, angular_z=0))
+                self.cmd_vel_callback(Twist(linear_x=self.MAX_SPEED, angular_z=0))
             elif keyboard.is_pressed('s'):
-                node.cmd_vel_callback(Twist(linear_x=-node.MAX_SPEED, angular_z=0))
+                self.cmd_vel_callback(Twist(linear_x=-self.MAX_SPEED, angular_z=0))
             elif keyboard.is_pressed('a'):
-                node.cmd_vel_callback(Twist(linear_x=0, angular_z=node.MAX_SPEED / 2))
+                self.cmd_vel_callback(Twist(linear_x=0, angular_z=self.MAX_SPEED / 2))
             elif keyboard.is_pressed('d'):
-                node.cmd_vel_callback(Twist(linear_x=0, angular_z=-node.MAX_SPEED / 2))
+                self.cmd_vel_callback(Twist(linear_x=0, angular_z=-self.MAX_SPEED / 2))
             elif keyboard.is_pressed('space'):
-                node.cmd_vel_callback(Twist(linear_x=0, angular_z=0))
+                self.cmd_vel_callback(Twist(linear_x=0, angular_z=0))
             elif keyboard.is_pressed('q'):
                 print("Exiting keyboard control...")
-                break
             time.sleep(0.1)
-    except KeyboardInterrupt:
-        print("Keyboard control interrupted.")
-    finally:
-        node.shutdown()
+        except KeyboardInterrupt:
+            print("Keyboard control interrupted.")
 
 
 if __name__ == "__main__":
-    try:
-        node = Node()
-        node.run()
-    except Exception as e:
-        pass
+    # try:
+    node = Node()
+    node.run()
+    # except Exception as e:
+        # print(e)
+        
     print("Exiting")
