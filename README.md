@@ -31,8 +31,12 @@ Installation:
 This repository is intended for use with ROS2 Humble.
 To install dependencies, run
 ```bash
+sudo apt update
+sudo apt install python3-rosdep
 sudo rosdep init
 rosdep update
+rosdep install --from-paths src --ignore-src --rosdistro humble -y
+
 ```
 
 
