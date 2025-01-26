@@ -19,6 +19,7 @@ Then build and run the container having the container terminal available, by usi
 ```bash
 cd Docker
 docker compose up -d
+docker run --platform linux/arm64 -it docker-rasp # if running from docker desktop windows
 ```
 
 For development on architectures different than **arm64** edit the ```docker-compose.yml``` file, dependent on the host platform. This step isn't necessary if you're running docker desktop.
