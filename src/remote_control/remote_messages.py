@@ -17,7 +17,7 @@ class RemoteComms(Node):
         ## Create subscriptions and publishers
         self.cmd_vel_pub = self.create_publisher(msg_type=Twist,topic="/cmd_vel",qos_profile=10)
         self.cmd_arm_motion_pub = self.create_publisher(msg_type=Quaternion,topic="/cmd_move_arm",qos_profile=10)
-        self.cmd_arm_grip_pub = self.create_publisher(msg_type=Bool,topic="/cmd_move_arm",qos_profile=10)
+        self.cmd_arm_grip_pub = self.create_publisher(msg_type=Bool,topic="/cmd_grip_arm",qos_profile=10)
         #self.telem_sub = self.create_subscription(msg_type=Float64,topic="/telemetry",qos_profile=10)
         """Need to add callback function to subscriber"""
         """The queue size has been set to 10 for now, but it can be changed as necessary"""
@@ -73,7 +73,6 @@ class RemoteComms(Node):
         self.end_theta = 0.0 #gripper (end-vector) rotation
         self.end_grip = False #gripper grab or not
 
-        """Q for Emma - do I create a timer? - yes"""
         # Timer to run remote input method repeatedly once the Node is initialised
         self.timer = self.create_timer(0.5,self.remote_input)
 
@@ -97,10 +96,10 @@ class RemoteComms(Node):
                 self.R1 = self.data.r_shoulder # bool # R1 on PS4, RS/RB on Xbox
                 self.L2 = self.data.left_trigger # int 0-255 # L2 on PS4, LT on Xbox
                 self.R2 = self.data.right_trigger # int 0-255 # R2 on PS4, RT on Xbox
-                self.ThumbLX: self.data.thumb_left_x # int 0-255
-                self.ThumbLY: self.data.thumb_left_y # int 0-255
-                self.ThumbRX: self.data.thumb_right_x # int 0-255 
-                self.ThumbRY: self.data.thumb_right_y # int 0-255
+                self.ThumbLX = self.data.thumb_left_x # int 0-255
+                self.ThumbLY = self.data.thumb_left_y # int 0-255
+                self.ThumbRX = self.data.thumb_right_x # int 0-255 
+                self.ThumbRY = self.data.thumb_right_y # int 0-255
 
                 #print to debug
                 print(f"Arm mode? {self.arm_mode}")
@@ -167,12 +166,12 @@ class RemoteComms(Node):
         # Left analog stick right/left for rotation
         if self.ThumbLX <= 5: #left
             self.arm_theta = 1.0 #positive usually means CCW by RH rule
-        elif self.ThumbLY >= 250: #right
+        elif self.ThumbLX >= 250: #right
             self.arm_theta = -1.0
         # up/down direction buttons on the left for wrist rotation
         if self.LT:
             self.end_theta = 1.0
-        elif self.RT:
+        elif self.LB:
             self.end_theta = -1.0
         # triangle button (right top) to grab
         if self.RT:
@@ -199,7 +198,9 @@ class RemoteComms(Node):
         arm_cmd.y = self.arm_theta #y is rotation
         arm_cmd.w = self.end_theta #w is wrist/end-vector joint position
         self.cmd_arm_motion_pub.publish(arm_cmd)
-        self.cmd_arm_grip_pub.publish(self.end_grip)
+        end_cmd = Bool()
+        end_cmd.data = self.end_grip
+        self.cmd_arm_grip_pub.publish(end_cmd)
     
     def emergency_stop(self):
         """Base code for this method, to be developed further"""
