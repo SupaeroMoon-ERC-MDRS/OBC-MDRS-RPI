@@ -12,6 +12,23 @@
   <exec_depend>sensor_msgs</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
 
+  <depend>python3-colcon-common-extensions</depend>
+  <depend>ros-humble-rviz2</depend>
+  <depend>ros-humble-controller-manager</depend>
+  <depend>ros-humble-robot-state-publisher</depend>
+  <depend>ros-humble-joint-state-publisher</depend>
+  <depend>ros-humble-joint-state-publisher-gui</depend>
+  <depend>ros-humble-gazebo-ros-pkgs</depend>
+  <depend>ros-humble-trajectory-msgs</depend>
+  <depend>ros-humble-velocity-controllers</depend>
+  <depend>ros-humble-joint-trajectory-controller</depend>
+  <depend>ros-humble-gazebo-ros2-control-demos</depend>
+  <depend>ros-humble-teleop-tools </depend>
+  <depend>ros-humble-key-teleop</depend>
+  <depend>ros-humble-tf-transformations</depend>
+  <depend>ros-humble-ros2-controllers</depend>
+  <depend>ros-humble-xacro</depend>
+
   <!-- <buildtool_depend>ament_cmake</buildtool_depend> -->
   <buildtool_depend>ament_python</buildtool_depend>
 

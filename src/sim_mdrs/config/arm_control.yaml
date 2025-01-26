@@ -1,50 +1,38 @@
 controller_manager:
   ros__parameters:
-    update_rate: 50
+    update_rate: 100  # Frequency (Hz) at which the controllers are updated
     use_sim_time: true
+    controllers:
+      - joint_state_broadcaster
+      - arm_controller
 
     joint_state_broadcaster:
       type: joint_state_broadcaster/JointStateBroadcaster
+      publish_rate: 50  # Frequency (Hz) for publishing joint states
 
-    arm_trajectory_controller:
-      type: position_controllers/JointTrajectoryController
-      joints:
-        - joint1
-        - joint2
-        - joint3
-        - joint4
-        - joint5
-      state_publish_rate: 50
-      constraints:
-        goal_time: 0.6
-        stopped_velocity_tolerance: 0.01
-        joint1:
-          trajectory: 0.1
-          goal: 0.1
-        joint2:
-          trajectory: 0.1
-          goal: 0.1
-        joint3:
-          trajectory: 0.1
-          goal: 0.1
-        joint4:
-          trajectory: 0.1
-          goal: 0.1
-        joint5:
-          trajectory: 0.1
-          goal: 0.1
+    arm_controller:
+      type: "joint_trajectory_controller/JointTrajectoryController"
 
-    # gripper_controller:
-    #   type: position_controllers/GripperActionController
-    #   joints:
-    #     - left_finger_joint
-    #     - right_finger_joint
-    #   state_publish_rate: 50
-    #   constraints:
-    #     goal_time: 0.2
-    #     left_finger_joint:
-    #       trajectory: 0.01
-    #       goal: 0.01
-    #     right_finger_joint:
-    #       trajectory: 0.01
-    #       goal: 0.01
+arm_controller:
+  ros__parameters:
+    joints:
+      - joint2
+      - joint3
+      - joint4
+      - joint5
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+
+    state_publish_rate: 50.0
+    action_monitor_rate: 20.0
+
+    allow_partial_joints_goal: false
+    open_loop_control: true
+    constraints:
+      stopped_velocity_tolerance: 0.01
+      goal_time: 0.0
+      joint1:
+        trajectory: 0.05
+        goal: 0.03

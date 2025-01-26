@@ -17,6 +17,9 @@ setup(
         (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
         (os.path.join('share', package_name, 'urdf'), glob('urdf/*.urdf.xacro')),
         (os.path.join('share', package_name, 'urdf/meshes'), glob('urdf/meshes/*.stl')),
+        (os.path.join('share', package_name, 'urdf/arm_meshes'), glob('urdf/arm_meshes/*.stl')),
+        (os.path.join('lib', package_name), glob('sim_mdrs/udpcanpy.cpython-310-x86_64-linux-gnu.so')),
+        (os.path.join('lib', package_name), glob('sim_mdrs/comms.dbc')),
     ],
     install_requires=['setuptools'],
     zip_safe=True,
@@ -27,6 +30,9 @@ setup(
     entry_points={
         'console_scripts': [
             'keyboard_control = sim_mdrs.keyboard_control:main',
+            'keyboard_arm = sim_mdrs.keyboard_arm:main',
+            'remote_msgs = sim_mdrs.remote_messages:main',
+            'remote_arm = sim_mdrs.remote_arm:main',
             'diff_controller = sim_mdrs.diff_controller:main'
         ],
     },

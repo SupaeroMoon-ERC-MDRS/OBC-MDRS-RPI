@@ -43,13 +43,19 @@ def generate_launch_description():
         parameters=[params]
     )
 
-    # Add a joint state publisher node
-    joint_state_publisher_node = Node(
-        package='joint_state_publisher',
-        executable='joint_state_publisher',
-        name='joint_state_publisher',
-        output='screen',
+    remote_control = Node(
+        package='sim_mdrs',
+        executable='remote_arm',
+        output='screen'
     )
+
+    # # Add a joint state publisher node
+    # joint_state_publisher_node = Node(
+    #     package='joint_state_publisher',
+    #     executable='joint_state_publisher',
+    #     name='joint_state_publisher',
+    #     output='screen',
+    # )
 
     spawn_entity = Node(package='gazebo_ros', executable='spawn_entity.py',
                         arguments=['-topic', 'robot_description', '-entity', 'arm', '-x', '0', '-y', '0', '-z', '0'],
@@ -72,6 +78,7 @@ def generate_launch_description():
     # )
 
     return LaunchDescription([
+        gazebo,
         RegisterEventHandler(
             event_handler=OnProcessExit(
                 target_action=spawn_entity,
@@ -82,7 +89,7 @@ def generate_launch_description():
                 ],
             )
         ),
-        gazebo,
         robot_state_publisher_node,
         spawn_entity,
+        remote_control
     ])

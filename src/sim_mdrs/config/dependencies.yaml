@@ -13,4 +13,5 @@ dependencies:
   - ros-humble-teleop-tools 
   - ros-humble-key-teleop
   - ros-humble-tf-transformations
+  - ros-humble-ros2-controllers
   - ros-humble-xacro
