@@ -1,5 +1,4 @@
 ## To create a ROS node to process incoming messages from the remote control
-"""Untested code for now"""
 from udpcanpy import NetworkHandler, RemoteControl #to access the UPDCAN protocol
 import rclpy
 from rclpy.node import Node
