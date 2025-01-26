@@ -2,17 +2,18 @@
 
 This repository will house the main files to go on the raspberry pi for the MDRS mission. This repository does not include any ROS packages or distributions and all dependencies will need to be installed prior to use.
 ## Docker setup for Raspberry pi
-After [installing Docker](https://docs.docker.com/engine/install/raspberry-pi-os/), transfer the files in directory ```/src/rpi_MDRS/Docker``` in the local file system of the board.
+After [installing Docker](https://docs.docker.com/engine/install/raspberry-pi-os/) on the board, transfer the files in directory ```/src/rpi_MDRS/Docker``` in the local file system of the board.
 
 NOTE: It is required to know set up the connection and know IP address of the Raspberry for the following step.
 
-Use *scp* to transfer files towards the board
+Use *scp* on your local machine to transfer files towards the board, using the command:
+
 
 ```bash
 scp -r OBC-RPI-MDRS/src/rpi_MDRS/Docker supaeromoon@<rasp-ip>:/
 ```
 
-Then build and run the container having the container terminal available, by using the file ```docker-compose.yml``` that calls ```Dockerfile``` to build the container in the first place.
+Then build and run the container having the container terminal available, by using the file ```docker-compose.yml``` that calls ```Dockerfile``` to build the container in the first place, using the command: 
 
 ```bash
 cd Docker
