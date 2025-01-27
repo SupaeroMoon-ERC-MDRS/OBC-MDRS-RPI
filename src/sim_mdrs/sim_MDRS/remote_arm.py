@@ -47,16 +47,53 @@ class KeyboardArmController(Node):
         self.get_logger().info(f'Command sent: {self.joint_positions}')
 
     def update_arm_position(self, ind, direction):
+        self.prev_pos = self.arm_pos #store last position in case new position outside limits
         self.arm_pos[ind] += direction * self.linear_increment
+        if self.check_pos_limits():
         ## Check if arm_pos is within sphere of motion
-        self.cart_to_joints()
-        self.send_command()
+            self.cart_to_joints()
+            self.send_command()
+        else:
+            self.arm_pos = self.prev_pos
 
     def update_arm_angular(self, ind, direction):
+        self.prev_pos = self.arm_pos
         self.arm_pos[ind] += direction * self.angular_increment
-        self.joint_positions[ind] = self.arm_pos[ind]
-        self.send_command()
+        if self.check_pos_limits():
+            self.joint_positions[ind] = self.arm_pos[ind]
+            self.send_command()
+        else:
+            self.arm_pos = self.prev_pos
 
+    def check_pos_limits(self):
+        ## Set up for upright when all joints are 90
+        r_max = self.l_arm_inf + self.l_arm_sup
+        r_min = np.sqrt(self.l_arm_inf**2 + self.l_arm_sup**2)
+        r_pos = np.sqrt(self.arm_pos[1]**2 + self.arm_pos[2]**2)
+        y_min = -self.l_arm_sup
+        theta_lim = 1*np.pi
+        if r_pos > r_max: #checking if target is too far
+            print("Man's reach exceeds his grasp")
+            #self.get_logger().info("Target position too far")
+            return False
+        elif r_pos < r_min: #close target forces t3 to go beyond limit #this limit will change to xmin if we change the setup
+            print("I need some more personal space")
+            #self.get_logger().info("Target position too close")
+            return False
+        elif self.arm_pos[3] < y_min: #too low means t2 goes over 180
+            print("Aim a little higher")
+            #self.get_logger().info("Target position too low")
+            return False
+        elif self.arm_pos[0] < 0 or self.arm_pos[0] > theta_lim: #need to check how much base motor can swivel
+            print("Don't look back in anger")
+            #self.get_logger().info("Target exceeds base motor rotation limit")
+            return False
+        elif self.arm_pos[3] < 0 or self.arm_pos[3] > np.pi: #NEEDS REVIEW - this is for t4 angle limit
+            print("Ow-ouch! Stop that, my wrist hurts")
+            #self.get_logger().info("Target beyond gripper rotation limit")
+            return False
+        else:
+            return True
 
     def control_loop(self):
         try:
@@ -101,7 +138,7 @@ class KeyboardArmController(Node):
         t2 = np.arctan2(s_q2, c_q2)
 
         # Solve last joint angle
-        t4 = gamma - t2 - t3
+        t4 = gamma #- t2 - t3 ## to simplify limits
 
         self.joint_positions = [t1, t2, t3, t4]
 
