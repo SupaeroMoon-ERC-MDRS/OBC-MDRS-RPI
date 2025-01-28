@@ -24,7 +24,7 @@ if __name__ == '__main__':
     
     parser.add_argument('motor_index', type=int, choices=range(16), help="which channel on the PCA9685 board and thus which motor we're commanding. "
                                                                "Normally, 0 corresponds to the back right corner, 1 to the front right, 2 to the front left, and 3 to the back left.")
-    parser.add_argument('angle_or_vel', type=int, help="angle or velocity?")
+    parser.add_argument('angle_or_vel', type=str, help="angle or velocity?")
     # parser.add_argument('angle_vel', type=int, help="angle between 120 and 180, vel between -1 and 1.")
     parser.add_argument('angle', type=int, help="angle between 120 and 180.")
     args = parser.parse_args()
