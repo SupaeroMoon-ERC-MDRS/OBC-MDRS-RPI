@@ -71,16 +71,17 @@ class KeyboardArmController(Node):
         r_min = np.sqrt(self.l_arm_inf**2 + self.l_arm_sup**2)
         r_pos = np.sqrt(self.arm_pos[1]**2 + self.arm_pos[2]**2)
         y_min = -self.l_arm_sup
+        x_min = self.l_arm_sup - self.l_arm_inf
         theta_lim = 1*np.pi
         if r_pos > r_max: #checking if target is too far
             print("Man's reach exceeds his grasp")
             #self.get_logger().info("Target position too far")
             return False
-        elif r_pos < r_min: #close target forces t3 to go beyond limit #this limit will change to xmin if we change the setup
+        elif self.arm_pos[1] < x_min: #close target forces t3 to go beyond limit #this limit will change to xmin if we change the setup
             print("I need some more personal space")
             #self.get_logger().info("Target position too close")
             return False
-        elif self.arm_pos[3] < y_min: #too low means t2 goes over 180
+        elif self.arm_pos[2] < y_min: #too low means t2 goes over 180
             print("Aim a little higher")
             #self.get_logger().info("Target position too low")
             return False
