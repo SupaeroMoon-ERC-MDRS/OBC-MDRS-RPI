@@ -9,6 +9,7 @@ $ pip3 install adafruit-circuitpython-servokit
 Instructions: https://learn.adafruit.com/adafruit-16-channel-servo-driver-with-raspberry-pi/using-the-adafruit-library
 """
 from time import sleep
+import time
 import argparse
 
 from adafruit_servokit import ServoKit
@@ -33,20 +34,20 @@ if __name__ == '__main__':
 
     if args.angle_or_vel == 'velocity':
         angle = 0
-        time = time.time()
+        s_time = time.time()
         kit.servo[args.motor_index].throttle = 1
 
         while angle < args.target_angle:
-            dt = time.time() - time
+            dt = time.time() - s_time
             angle = MAX_VEL * dt
-            time = time.time()
+            s_time = time.time()
 
         if angle > args.target_angle:
             kit.servo[args.motor_index].throttle = -1
         while angle > args.target_angle:
-            dt = time.time() - time
+            dt = time.time() - s_time
             angle = - MAX_VEL * dt
-            time = time.time()
+            s_time = time.time()
 
         kit.servo[args.motor_index].throttle = 0
 
