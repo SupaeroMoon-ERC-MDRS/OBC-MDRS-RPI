@@ -2,8 +2,8 @@ import serial
 import time
 
 # RoboClaw settings
-SERIAL_PORT = "/dev/ttyUSB0" # dmesg | grep tty to get serial connections
-BAUDRATE = 38400
+SERIAL_PORT = "/dev/ttyS0" # dmesg | grep tty to get serial connections
+BAUDRATE = 115200
 ADDRESS = [0x80, 0x81, 0x82]
 
 # Basic commands
