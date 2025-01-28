@@ -13,6 +13,7 @@ import argparse
 
 from adafruit_servokit import ServoKit
 
+MAX_VEL = 360  # degrees per second
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
@@ -23,17 +24,34 @@ if __name__ == '__main__':
     parser.add_argument('motor_index', type=int, choices=range(16), help="which channel on the PCA9685 board and thus which motor we're commanding. "
                                                                "Normally, 0 corresponds to the back right corner, 1 to the front right, 2 to the front left, and 3 to the back left.")
     parser.add_argument('angle_or_vel', type=int, help="angle or velocity?")
-    parser.add_argument('angle_vel', type=int, help="angle between 120 and 180, vel between -1 and 1.")
+    # parser.add_argument('angle_vel', type=int, help="angle between 120 and 180, vel between -1 and 1.")
+    parser.add_argument('angle', type=int, help="angle between 120 and 180.")
     args = parser.parse_args()
 
     kit = ServoKit(channels=16)
     sleep(0.1)
 
     if args.angle_or_vel == 'velocity':
-        kit.servo[args.motor_index].throttle = args.throttle
-        sleep(0.3)
+        angle = 0
+        time = time.time()
+        kit.servo[args.motor_index].throttle = 1
+
+        while angle < args.target_angle:
+            dt = time.time() - time
+            angle = MAX_VEL * dt
+            time = time.time()
+
+        if angle > args.target_angle:
+            kit.servo[args.motor_index].throttle = -1
+        while angle > args.target_angle:
+            dt = time.time() - time
+            angle = - MAX_VEL * dt
+            time = time.time()
+
         kit.servo[args.motor_index].throttle = 0
+
     else:
+
         kit.servo[args.motor_index].actuation_range = 300
         kit.servo[args.motor_index].set_pulse_width_range(500, 2500)
         kit.servo[args.motor_index].angle = args.target_angle
