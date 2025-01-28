@@ -40,7 +40,7 @@ class Servo():
 
 
 if __name__ == "__main__":
-    pin = 11
+    pin = 4
     servo = Servo(pin)
     try:
         servo.calibrate()
