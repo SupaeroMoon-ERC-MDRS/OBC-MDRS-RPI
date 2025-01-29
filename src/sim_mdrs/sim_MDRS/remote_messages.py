@@ -181,8 +181,7 @@ class RemoteComms(Node):
         self.cmd_vel_pub.publish(rov_cmd)
 
     def arm_command(self):
-        #Need to initialise within this method to set everything back to zero in every loop so we only send what buttons are pressed
-        
+ 
         self.arm_x = 0.0 #forward/back
         self.arm_z = 0.0 #up/down
         self.arm_theta = 0.0 #arm swivel
