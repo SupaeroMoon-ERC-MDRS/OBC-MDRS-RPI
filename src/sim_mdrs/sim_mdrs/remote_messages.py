@@ -102,7 +102,6 @@ class RemoteComms(Node):
 
                 print(self)
 
-                self.arm_mode = False
                 print(f"Arm mode? {self.arm_mode}")
 
                 if self.L1 and self.R1:
