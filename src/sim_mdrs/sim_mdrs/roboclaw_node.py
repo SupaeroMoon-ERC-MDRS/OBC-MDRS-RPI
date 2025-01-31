@@ -120,22 +120,17 @@ class RoboclawNode(Node):
         #logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
         baud_rate = 115200
-        dev_name1 = "COM3"  # change
-        dev_name2 = "COM3"  # change
-        dev_name3 = "COM3"  # change
+        dev_name1 = "/dev/ttyAMA0"  # change
 
-        self.robos = [
-            Roboclaw(dev_name1, baud_rate),
-            Roboclaw(dev_name2, baud_rate),
-            Roboclaw(dev_name3, baud_rate),
-        ]
-        self.addresses = [int(128), int(128), int(128)]  # change
+
+        self.robo = Roboclaw(dev_name1, baud_rate)
+        self.addresses = [int(128), int(129), int(130)]  # change
 
         print("Starting motor drives")
-        for robo, address in zip(self.robos, self.addresses):
+        for address in self.addresses:
             try:
-                robo.Open()
-                version = robo.ReadVersion(address)
+                self.robo.Open()
+                version = self.robo.ReadVersion(address)
                 if version[0]:
                     self.get_logger().info(f"Roboclaw Version: {repr(version[1])}")
                 else:
@@ -143,8 +138,8 @@ class RoboclawNode(Node):
             except Exception as e:
                 self.get_logger().error("Could not connect to Roboclaw: %s", e)
                 raise e
-            robo.SpeedM1M2(address, 0, 0)
-            robo.ResetEncoders(address)
+            self.robo.SpeedM1M2(address, 0, 0)
+            self.robo.ResetEncoders(address)
 
         self.MAX_SPEED = 2.0  # to be tested
         self.TICKS_PER_METER = 4342.2  # to be tested
@@ -163,7 +158,7 @@ class RoboclawNode(Node):
         """Handle velocity commands for multiple differential drive motors"""
         try:
             i = 0
-            for robo, address, encoder in zip(self.robos, self.addresses, self.encodm):
+            for address, encoder in zip(self.addresses, self.encodm):
                 left_speed = msg[i * 2] #these indexes can also just be 0 and 1 and it should work
                 right_speed = msg[i * 2 + 1]
 
@@ -171,17 +166,17 @@ class RoboclawNode(Node):
                 left_ticks = int(left_speed * self.TICKS_PER_METER)
                 right_ticks = int(right_speed * self.TICKS_PER_METER)
 
-                robo.SpeedM1M2(address, right_ticks, left_ticks)
+                self.robo.SpeedM1M2(address, right_ticks, left_ticks)
                 i += 1
                 try:
                     encoder.print_state(
-                        robo.ReadEncM1(address)[1], robo.ReadEncM2(address)[1]
+                        self.robo.ReadEncM1(address)[1], self.robo.ReadEncM2(address)[1]
                     )
                 except (OSError, IndexError) as e:
                     self.get_logger().error(f"Encoder read failed: {str(e)}")
                     # Optional: Stop motors on failure
-                    robo.ForwardM1(address, 0)
-                    robo.ForwardM2(address, 0)
+                    self.robo.ForwardM1(address, 0)
+                    self.robo.ForwardM2(address, 0)
                 except Exception as e:
                     self.get_logger().error(f"Unexpected error: {str(e)}")
 
@@ -196,15 +191,15 @@ class RoboclawNode(Node):
     def shutdown(self):
         print("Shutting down")
         try:
-            for robo, address in zip(self.robos, self.addresses):
-                robo.ForwardM1(address, 0)
-                robo.ForwardM2(address, 0)
+            for address in self.addresses:
+                self.robo.ForwardM1(address, 0)
+                self.robo.ForwardM2(address, 0)
         except OSError:
             print("Shutdown did not work trying again")
             try:
-                for robo, address in zip(self.robos, self.addresses):
-                    robo.ForwardM1(address, 0)
-                    robo.ForwardM2(address, 0)
+                for address in self.addresses:
+                    self.robo.ForwardM1(address, 0)
+                    self.robo.ForwardM2(address, 0)
             except OSError as e:
                 print("Could not shutdown motors!!!!")
                 print(e)
