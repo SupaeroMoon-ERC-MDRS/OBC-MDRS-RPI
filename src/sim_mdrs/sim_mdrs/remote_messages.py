@@ -100,11 +100,13 @@ class RemoteComms(Node):
                 self.ThumbRX = self.data.thumb_right_x # int 0-255 
                 self.ThumbRY = self.data.thumb_right_y # int 0-255
 
-                self.arm_mode = True
+                print(self)
+
+                self.arm_mode = False
                 print(f"Arm mode? {self.arm_mode}")
 
-                # if self.L1 and self.R1:
-                    # self.arm_mode = not self.arm_mode
+                if self.L1 and self.R1:
+                    self.arm_mode = not self.arm_mode
 
                 if not self.arm_mode:
                     self.rover_command()
@@ -170,9 +172,9 @@ class RemoteComms(Node):
         print(f"speeds calculated to send: {self.lin_speed,self.ang_speed}")
         #print to debug
         print(f"speeds being sent: {self.lin_speed,self.ang_speed}")
-        # if self.RB: #normal stop button - values reset to zero before creating and publishing Twist
-        #     self.lin_speed = 0.0
-        #     self.ang_speed = 0.0
+        if self.RB: #normal stop button - values reset to zero before creating and publishing Twist
+            self.lin_speed = 0.0
+            self.ang_speed = 0.0
         
         # Twist message to store and send the current command values
         rov_cmd = Twist()
@@ -215,12 +217,12 @@ class RemoteComms(Node):
         #print to debug
         print(f"arm commands to send: {self.arm_x, self.arm_z}")
         # #stop button
-        # if self.RB:
-        #     self.arm_x = 0.0
-        #     self.arm_z = 0.0 
-        #     self.arm_theta = 0.0 
-        #     self.end_theta = 0.0 
-        #     self.end_grip = False
+        if self.RB:
+            self.arm_x = 0.0
+            self.arm_z = 0.0 
+            self.arm_theta = 0.0 
+            self.end_theta = 0.0 
+            self.end_grip = False
 
 
         #print to debug
