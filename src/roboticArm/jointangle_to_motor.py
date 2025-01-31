@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float32  # Message type for angle input
+from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from adafruit_pca9685 import PCA9685
 from board import SCL, SDA
 import busio
@@ -15,14 +15,14 @@ class MotorControlNode(Node):
 
         self.joint_pins = {'joint2': 10, 'joint3': 11, 'joint4': 12, 'joint5': 13} # pinout of GPIOs
 
-        for joint, pin in self.joint_pins:
+        for joint, pin in self.joint_pins.items():
             GPIO.setup(pin,GPIO.OUT)
             self.pin = pin
             self.p = GPIO.PWM(pin, 50)
             self.p.start(0) 
 
         self.subscription = self.create_subscription(
-            Float32,
+            JointTrajectory,
             '/arm_controller/joint_trajectory',  # Topic name
             self.angle_callback,
             10  # QoS
