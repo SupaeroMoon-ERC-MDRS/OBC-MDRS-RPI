@@ -4,7 +4,8 @@ import rclpy
 from rclpy.node import Node
 from roboclaw_driver import Roboclaw
 
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64MultiArray
+import numpy as np
 import time
 
 
@@ -111,12 +112,11 @@ class EncoderOdom:
 class RoboclawNode(Node):
     def __init__(self):
         super().__init__("roboclaw_node")
-        rospy.init_node("roboclaw_node", anonymous=True)
-        rospy.Subscriber(
+        self.subscription = self.create_subscription(
             Float64MultiArray, "/wheel_controller/commands", self.cmd_vel_motors, 10
         )
 
-        logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+        #logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
         baud_rate = 115200
         dev_name1 = "COM3"  # change
@@ -136,11 +136,11 @@ class RoboclawNode(Node):
                 robo.Open()
                 version = robo.ReadVersion(address)
                 if version[0]:
-                    rospy.loginfo(f"Roboclaw Version: {repr(version[1])}")
+                    self.get_logger().info(f"Roboclaw Version: {repr(version[1])}")
                 else:
-                    rospy.logwarn("Could not get version from Roboclaw")
+                    self.get_logger().warn("Could not get version from Roboclaw")
             except Exception as e:
-                rospy.logerr("Could not connect to Roboclaw: %s", e)
+                self.get_logger().error("Could not connect to Roboclaw: %s", e)
                 raise e
             robo.SpeedM1M2(address, 0, 0)
             robo.ResetEncoders(address)
@@ -156,14 +156,14 @@ class RoboclawNode(Node):
             EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
         ]
 
-        rospy.loginfo("Roboclaw Node Initialized")
+        self.get_logger().info("Roboclaw Node Initialized")
 
     def cmd_vel_motors(self, msg):
         """Handle velocity commands for multiple differential drive motors"""
         try:
             i = 0
             for robo, address, encoder in zip(self.robos, self.addresses, self.encodm):
-                left_speed = msg[i * 2]
+                left_speed = msg[i * 2] #these indexes can also just be 0 and 1 and it should work
                 right_speed = msg[i * 2 + 1]
 
                 # Ticks conversion
@@ -171,24 +171,24 @@ class RoboclawNode(Node):
                 right_ticks = int(right_speed * self.TICKS_PER_METER)
 
                 robo.SpeedM1M2(address, right_ticks, left_ticks)
-
+                i += 1
                 try:
                     encoder.print_state(
                         robo.ReadEncM1(address)[1], robo.ReadEncM2(address)[1]
                     )
                 except (OSError, IndexError) as e:
-                    rospy.logerr(f"Encoder read failed: {str(e)}")
+                    self.get_logger().error(f"Encoder read failed: {str(e)}")
                     # Optional: Stop motors on failure
                     robo.ForwardM1(address, 0)
                     robo.ForwardM2(address, 0)
                 except Exception as e:
-                    rospy.logerr(f"Unexpected error: {str(e)}")
+                    self.get_logger().error(f"Unexpected error: {str(e)}")
 
                 # Update timestamp
                 self.last_set_speed_time = time.time()
 
         except Exception as e:
-            rospy.logerr(f"Motor command failed: {str(e)}")
+            self.get_logger().error(f"Motor command failed: {str(e)}")
             self.shutdown()
 
     # TODO: need clean shutdown so motors stop even if new msgs are arriving
