@@ -4,7 +4,9 @@
 
     <ros2_control name="RobotSystem" type="system">
         <hardware>
-            <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+            <xacro:if value="${use_gazebo}">
+                <plugin>gazebo_ros2_control/GazeboSystem</plugin>
+            </xacro:if>
         </hardware>
  
         <joint name="joint2">

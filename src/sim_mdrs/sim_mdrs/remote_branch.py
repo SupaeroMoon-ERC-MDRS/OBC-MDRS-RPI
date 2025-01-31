@@ -17,7 +17,7 @@ class RemoteComms(Node):
         ## Create subscriptions and publishers
         self.cmd_vel_pub = self.create_publisher(msg_type=Twist,topic="/cmd_vel",qos_profile=10)
         self.cmd_arm_motion_pub = self.create_publisher(msg_type=Quaternion,topic="/cmd_move_arm",qos_profile=10)
-        self.cmd_arm_grip_pub = self.create_publisher(msg_type=Bool,topic="/cmd_move_arm",qos_profile=10)
+        self.cmd_arm_grip_pub = self.create_publisher(msg_type=Bool,topic="/cmd_grip_arm",qos_profile=10)
         #self.telem_sub = self.create_subscription(msg_type=Float64,topic="/telemetry",qos_profile=10)
         """Need to add callback function to subscriber"""
         """The queue size has been set to 10 for now, but it can be changed as necessary"""

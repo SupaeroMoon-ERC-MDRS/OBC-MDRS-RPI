@@ -193,3 +193,18 @@ class RemoteComms(Node):
         and integration of rover and robotic arm controls"""
         """To be added later: proper error handling and emergency stop procedure"""
 
+def main(args=None):
+    rclpy.init(args=args)
+    node = RemoteComms()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.nh.stop()
+        node.destroy_node()
+        rclpy.shutdown()
+
+if __name__ == '__main__':
+    main()
