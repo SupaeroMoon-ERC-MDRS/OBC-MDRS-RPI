@@ -89,7 +89,7 @@ def generate_launch_description():
     # gripper control node
     gripper_control = Node(
         package='sim_mdrs',
-        executable='gripper_control',
+        executable='gripper',
         output='screen'
     )
 

@@ -36,7 +36,7 @@ setup(
             'diff_controller = sim_mdrs.diff_controller:main',
             'roboclaw_node = sim_mdrs.roboclaw_node:main',
             'jointangle_to_motor = sim_mdrs.jointangle_to_motor:main',
-            'gripper_control = sim_mdrs.gripper_control:main',
+            'gripper = sim_mdrs.gripper:main',
         ],
     },
 
