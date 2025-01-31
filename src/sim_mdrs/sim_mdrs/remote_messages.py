@@ -73,7 +73,7 @@ class RemoteComms(Node):
 
         """Q for Emma - do I create a timer? - yes"""
         # Timer to run remote input method repeatedly once the Node is initialised
-        self.timer = self.create_timer(0.5,self.remote_input)
+        self.timer = self.create_timer(0.1,self.remote_input)
 
     def remote_input(self):
        ## main method to access the input message from the remote control and publish to topic
@@ -248,10 +248,7 @@ class RemoteComms(Node):
         end_cmd = Bool()
         end_cmd.data = False
         self.cmd_arm_grip_pub.publish(end_cmd)
-        print("EMERGENCY! Stopping...")
-        """Next steps to add: Toggle switch, Robotic Arm message definition, Robotic arm remote input,
-        and integration of rover and robotic arm controls"""
-        """To be added later: proper error handling and emergency stop procedure"""
+        raise Exception("EMERGENCY! Stopping...")
 
 def main(args=None):
     rclpy.init(args=args)
