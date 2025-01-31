@@ -32,9 +32,7 @@ def generate_launch_description():
         print(f"Error processing xacro file: {e}")
         return LaunchDescription([])
     
-    xacro.process_doc(doc)
-    params = {'robot_description': doc.toxml()}
-
+    
     # Define the parameters to pass to the robot state publisher
     robot_state_publisher_node = Node(
         package='robot_state_publisher',
