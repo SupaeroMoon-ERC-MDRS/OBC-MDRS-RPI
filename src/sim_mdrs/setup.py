@@ -19,6 +19,7 @@ setup(
         (os.path.join('share', package_name, 'urdf/meshes'), glob('urdf/meshes/*.stl')),
         (os.path.join('share', package_name, 'urdf/arm_meshes'), glob('urdf/arm_meshes/*.stl')),
         (os.path.join('lib', package_name), glob('sim_mdrs/udpcanpy*')),
+        (os.path.join('lib', package_name), glob('roboclaw/roboclaw_driver.py')),
         (os.path.join('lib', package_name), glob('sim_mdrs/comms.dbc')),
     ],
     install_requires=['setuptools'],
