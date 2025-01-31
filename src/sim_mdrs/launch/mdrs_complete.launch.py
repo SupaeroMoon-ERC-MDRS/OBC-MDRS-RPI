@@ -86,6 +86,13 @@ def generate_launch_description():
         output='screen'
     )
 
+    # gripper control node
+    gripper_control = Node(
+        package='sim_mdrs',
+        executable='gripper_control',
+        output='screen'
+    )
+
     # joint angle node
     joint2motor = Node(
         package='sim_mdrs',
@@ -158,6 +165,7 @@ def generate_launch_description():
         remote_arm,
         diff_controller,
         roboclaw_controller,
-        joint2motor
+        joint2motor,
+        gripper_control
         # TODO telemetry
     ])
