@@ -258,6 +258,8 @@ def main(args=None):
         rclpy.spin(node)
     except KeyboardInterrupt:
         pass
+    except Exception:
+        pass
     finally:
         node.nh.stop()
         node.destroy_node()
