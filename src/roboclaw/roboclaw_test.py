@@ -116,7 +116,7 @@ class Node:
         #                0x8000: (logging.warning("M2 home"))}
         
         self.address = int(128)
-        dev_name = "COM3"
+        dev_name = "/dev/ttyAMA0"
         baud_rate = 115200
 
         self.robo = roboclaw.Roboclaw(dev_name, baud_rate)
@@ -124,6 +124,7 @@ class Node:
 
         try:
             self.robo.Open()
+            print("Opened connection")
         except Exception as e:
             print("Could not connect to Roboclaw")
             raise(e)

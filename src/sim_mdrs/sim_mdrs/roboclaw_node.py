@@ -6,6 +6,7 @@ from roboclaw_driver import Roboclaw
 
 from std_msgs.msg import Float64
 import time
+import numpy as np
 
 class Struct:
     def __init__(self, **kwargs):
