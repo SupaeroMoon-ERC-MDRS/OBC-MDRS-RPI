@@ -245,7 +245,9 @@ class RemoteComms(Node):
 
         movearm = Quaternion()
         self.cmd_arm_motion_pub.publish(movearm)
-        self.cmd_arm_grip_pub.publish(Bool(False))
+        end_cmd = Bool()
+        end_cmd.data = False
+        self.cmd_arm_grip_pub.publish(end_cmd)
         print("EMERGENCY! Stopping...")
         """Next steps to add: Toggle switch, Robotic Arm message definition, Robotic arm remote input,
         and integration of rover and robotic arm controls"""
