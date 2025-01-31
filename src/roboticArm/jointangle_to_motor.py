@@ -42,7 +42,7 @@ class MotorControlNode(Node):
 
         # Initialising some characterisitcs of the motors
         self.servo_motors = [3]
-        self.cont_motors = [1, 2]
+        self.cont_motors = [0, 1, 2]
         self.cont_ang_vel = 360  # deg/s #how do we know this?
 
         for idx in self.servo_motors:  # to set angle limits on servo motors
@@ -101,7 +101,7 @@ class MotorControlNode(Node):
         elif joint in self.cont_motors:
             ang_diff = angle - self.arm_curr_pos[joint]
             dt = ang_diff / self.cont_ang_vel
-            self.kit.continuous_servo[joint].throttle = np.sign(ang_diff)
+            self.kit.continuous_servo[joint].throttle = np.sign(ang_diff)*0.5
             sleep(dt)
             self.kit.continuous_servo[joint].throttle = 0
             self.arm_curr_pos[joint] = angle
