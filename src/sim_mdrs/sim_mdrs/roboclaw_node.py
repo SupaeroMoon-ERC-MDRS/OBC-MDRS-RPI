@@ -5,6 +5,7 @@ from rclpy.node import Node
 from roboclaw_driver import Roboclaw
 
 from std_msgs.msg import Float64
+import time
 
 class Struct:
     def __init__(self, **kwargs):
@@ -94,7 +95,7 @@ class EncoderOdom:
 
 class RoboclawNode(Node):
     def __init__(self):
-        super().__init__('roboclaw_node'):
+        super().__init__('roboclaw_node')
         rospy.init_node('roboclaw_node', anonymous=True)
         rospy.Subscriber(Float64MultiArray, '/wheel_controller/commands', self.cmd_vel_motors, 10)
         
