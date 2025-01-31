@@ -7,7 +7,6 @@ from roboclaw_driver import Roboclaw
 from std_msgs.msg import Float64MultiArray
 import numpy as np
 import time
-import numpy as np
 
 
 class Struct:
@@ -159,8 +158,8 @@ class RoboclawNode(Node):
         try:
             i = 0
             for address, encoder in zip(self.addresses, self.encodm):
-                left_speed = msg[i * 2] #these indexes can also just be 0 and 1 and it should work
-                right_speed = msg[i * 2 + 1]
+                left_speed = msg.data[i * 2] #these indexes can also just be 0 and 1 and it should work
+                right_speed = msg.data[i * 2 + 1]
 
                 # Ticks conversion
                 left_ticks = int(left_speed * self.TICKS_PER_METER)
