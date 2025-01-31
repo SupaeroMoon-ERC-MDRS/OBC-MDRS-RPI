@@ -10,6 +10,11 @@ def generate_launch_description():
         ),
         Node(
             package='sim_mdrs',
+            executable='diff_controller',
+            name='listener_node'
+        ),
+        Node(
+            package='sim_mdrs',
             executable='roboclaw_node',
             name='listener_node'
         )
