@@ -127,7 +127,7 @@ class RoboclawNode(Node):
         self.addresses = [int(128), int(129), int(130)]  # change
         self.gear_ratio = 26.9
         self.ticks_per_rev = 752
-        self.conversion_factor = 1/100
+        self.conversion_factor = 1
         self.accel = int(16383/2)
 
         print("Starting motor drives")
@@ -157,15 +157,15 @@ class RoboclawNode(Node):
             # self.robo.ResetEncoders(address)
 
         self.MAX_SPEED = 2.0  # to be tested
-        self.TICKS_PER_METER = 4342.2  # to be tested
+        # self.TICKS_PER_METER = 4342.2  # to be tested
         self.BASE_WIDTH = 0.315  # to be checked
         self.last_set_speed_time = time.time()
 
-        self.encodm = [
-            EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
-            EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
-            EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
-        ]
+        # self.encodm = [
+        #     EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
+        #     EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
+        #     EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
+        # ]
 
         self.get_logger().info("Roboclaw Node Initialized")
 
@@ -177,10 +177,8 @@ class RoboclawNode(Node):
                 right_speed = msg.data[1]
 
                 # Ticks conversion
-                left_ticks = int(left_speed * self.TICKS_PER_METER)
-                right_ticks = int(right_speed * self.TICKS_PER_METER)
-                qppsm1 = self.vel_to_qpps(right_ticks)
-                qppsm2 = self.vel_to_qpps(left_ticks)
+                qppsm1 = self.vel_to_qpps(right_speed)
+                qppsm2 = self.vel_to_qpps(left_speed)
                 self.robo.DutyAccelM1M2(address, self.accel, qppsm1, self.accel, qppsm2)
                 try:
                     encoder.print_state(
@@ -202,7 +200,7 @@ class RoboclawNode(Node):
             self.shutdown()
 
     def vel_to_qpps(self, vel):
-        return int(vel * self.gear_ratio * self.conversion_factor / (2 * np.pi)) 
+        return int(vel * self.gear_ratio * self.conversion_factor * self.ticks_per_rev / (2 * np.pi)) 
     # TODO: need clean shutdown so motors stop even if new msgs are arriving
     def shutdown(self):
         self.get_logger().info("Shutting down")
