@@ -107,6 +107,7 @@ class EncoderOdom:
         print(f"msg.linear.x = {vx}")
         print(f"msg.linear.y = {0}")
         print(f"msg.angular.z = {vth}")
+        print("\n\n")
 
 
 class RoboclawNode(Node):
@@ -126,9 +127,17 @@ class RoboclawNode(Node):
         self.addresses = [int(128), int(129), int(130)]  # change
 
         print("Starting motor drives")
+
+        try:
+            self.robo.Open()
+            self.get_logger().info("Successfully opened serial communications")
+        except Exception as e:
+            self.get_logger().error("Could not connect to Roboclaw: %s", e)
+            raise e
+        
+
         for address in self.addresses:
             try:
-                self.robo.Open()
                 version = self.robo.ReadVersion(address)
                 if version[0]:
                     self.get_logger().info(f"Roboclaw Version: {repr(version[1])}")
@@ -156,17 +165,16 @@ class RoboclawNode(Node):
     def cmd_vel_motors(self, msg):
         """Handle velocity commands for multiple differential drive motors"""
         try:
-            i = 0
             for address, encoder in zip(self.addresses, self.encodm):
-                left_speed = msg.data[i * 2] #these indexes can also just be 0 and 1 and it should work
-                right_speed = msg.data[i * 2 + 1]
+                left_speed = msg.data[0] #these indexes can also just be 0 and 1 and it should work
+                right_speed = msg.data[1]
+
 
                 # Ticks conversion
                 left_ticks = int(left_speed * self.TICKS_PER_METER)
                 right_ticks = int(right_speed * self.TICKS_PER_METER)
 
                 self.robo.SpeedM1M2(address, right_ticks, left_ticks)
-                i += 1
                 try:
                     encoder.print_state(
                         self.robo.ReadEncM1(address)[1], self.robo.ReadEncM2(address)[1]
@@ -188,20 +196,20 @@ class RoboclawNode(Node):
 
     # TODO: need clean shutdown so motors stop even if new msgs are arriving
     def shutdown(self):
-        print("Shutting down")
+        self.get_logger().info("Shutting down")
         try:
             for address in self.addresses:
                 self.robo.ForwardM1(address, 0)
                 self.robo.ForwardM2(address, 0)
         except OSError:
-            print("Shutdown did not work trying again")
+            self.get_logger().info("Shutdown did not work trying again")
             try:
                 for address in self.addresses:
                     self.robo.ForwardM1(address, 0)
                     self.robo.ForwardM2(address, 0)
             except OSError as e:
-                print("Could not shutdown motors!!!!")
-                print(e)
+                self.get_logger().error("Could not shutdown motors!!!!")
+                self.get_logger().error(e)
 
 
 def main(args=None):
