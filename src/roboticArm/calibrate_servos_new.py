@@ -35,7 +35,7 @@ if __name__ == '__main__':
 
     ang_diff = args.target_angle - args.curr_angle
     dt = ang_diff/ang_vel
-    kit.continuous_servo[args.joint].throttle = np.sign(ang_diff)
+    kit.continuous_servo[args.joint].throttle = np.sign(ang_diff)*0.3
     sleep(dt)
     kit.continuous_servo[args.joint].throttle = 0
 
