@@ -10,7 +10,7 @@ import numpy as np
 
 class ArmController(Node):
     def __init__(self):
-        super().__init__('keyboard_arm_controller')
+        super().__init__('arm_controller')
         self.publisher_ = self.create_publisher(JointTrajectory, '/arm_controller/joint_trajectory', 10)
         self.subscriber_ = self.create_subscription(Quaternion, '/cmd_move_arm', self.listener_callback, 10)
 
