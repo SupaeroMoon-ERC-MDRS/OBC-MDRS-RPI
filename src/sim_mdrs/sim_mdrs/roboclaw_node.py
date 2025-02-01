@@ -128,7 +128,7 @@ class RoboclawNode(Node):
         self.gear_ratio = 26.9
         self.wheel_radius = 0.04
         self.ticks_per_rev = 752
-        self.conversion_factor = -1/10
+        self.conversion_factor = 1/100
         self.accel = int(16383/2)
 
         print("Starting motor drives")
@@ -180,7 +180,7 @@ class RoboclawNode(Node):
                 # Ticks conversion
                 qppsm1 = self.vel_to_qpps(right_speed)
                 qppsm2 = self.vel_to_qpps(left_speed)
-                self.robo.DutyAccelM1M2(address, self.accel, qppsm1, self.accel, qppsm2)
+                self.robo.DutyAccelM1M2(address, self.accel, qppsm1, self.accel, -qppsm2)
 
                 # Update timestamp
                 self.last_set_speed_time = time.time()
