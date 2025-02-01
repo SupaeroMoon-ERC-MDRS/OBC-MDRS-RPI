@@ -29,17 +29,17 @@ class RemoteComms(Node):
         self.res = self.nh.parse(protocol)
         
         if self.res != 0:
-            self.get_logger().error("Failed to parse UDPCAN protocol, error code:", self.res)
+            self.get_logger().error(f"Failed to parse UDPCAN protocol, error code: {self.res}")
             """Do we need some sort of exit clause here for the error? - ask Em or En when they are freer"""
 
         self.res = self.nh.init()
         if self.res != 0:
-            self.get_logger().error("nh Failed to init, error code:", self.res)
+            self.get_logger().error(f"nh Failed to init, error code: {self.res}")
             
         
         self.res = self.nh.start()
         if self.res != 0:
-            self.get_logger().error("Failed to start thread, error code:", self.res)
+            self.get_logger().error(f"Failed to start thread, error code: {self.res}")
         
 
         self.remote = self.nh.getRemoteControl() #This creates the higher order structure that contains the data we need to access - MessageWrapper equivalent, I think
@@ -100,7 +100,7 @@ class RemoteComms(Node):
                 self.ThumbRX = self.data.thumb_right_x # int 0-255 
                 self.ThumbRY = self.data.thumb_right_y # int 0-255
 
-                self.get_logger().error(self)
+                #self.get_logger().error(self)
 
                 self.get_logger().error(f"Arm mode? {self.arm_mode}")
 
