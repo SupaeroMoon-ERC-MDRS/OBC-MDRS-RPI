@@ -124,7 +124,7 @@ class RoboclawNode(Node):
 
 
         self.robo = Roboclaw(dev_name1, baud_rate)
-        self.addresses = [int(128)] #, int(129), int(130)]  # change
+        self.addresses = [int(129)] #, int(129), int(130)]  # change
 
         print("Starting motor drives")
 
