@@ -202,7 +202,7 @@ class RoboclawNode(Node):
             self.shutdown()
 
     def vel_to_qpps(self, vel):
-        return int(vel * self.gear_ratio * self.conversion_factor * self.ticks_per_rev / (2 * np.pi)) 
+        return int(vel * self.gear_ratio * self.conversion_factor / (2 * np.pi)) 
     # TODO: need clean shutdown so motors stop even if new msgs are arriving
     def shutdown(self):
         self.get_logger().info("Shutting down")
