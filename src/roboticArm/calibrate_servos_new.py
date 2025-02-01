@@ -32,11 +32,14 @@ if __name__ == '__main__':
     kit = ServoKit(channels=16)
     sleep(0.1)
 
+    try: 
+        ang_diff = args.target_angle - args.curr_angle
+        dt = ang_diff/ang_vel
+        kit.continuous_servo[args.joint].throttle = np.sign(ang_diff)*0.3
+        sleep(dt)
+        kit.continuous_servo[args.joint].throttle = 0
 
-    ang_diff = args.target_angle - args.curr_angle
-    dt = ang_diff/ang_vel
-    kit.continuous_servo[args.joint].throttle = np.sign(ang_diff)*0.3
-    sleep(dt)
-    kit.continuous_servo[args.joint].throttle = 0
-
-    print(f"Servo motor at channel {args.joint} was set to {args.target_angle}")
+        print(f"Servo motor at channel {args.joint} was set to {args.target_angle}")
+    except:
+        kit.continuous_servo[args.joint].throttle = 0
+        raise
