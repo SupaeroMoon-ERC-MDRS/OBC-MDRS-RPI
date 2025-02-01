@@ -8,7 +8,7 @@ import tty
 import numpy as np
 
 
-class KeyboardArmController(Node):
+class ArmController(Node):
     def __init__(self):
         super().__init__('keyboard_arm_controller')
         self.publisher_ = self.create_publisher(JointTrajectory, '/arm_controller/joint_trajectory', 10)
@@ -109,7 +109,7 @@ class KeyboardArmController(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = KeyboardArmController()
+    node = ArmController()
     try:
         rclpy.spin(node)  # Keep the node running
     except KeyboardInterrupt:

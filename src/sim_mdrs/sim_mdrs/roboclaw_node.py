@@ -169,7 +169,6 @@ class RoboclawNode(Node):
                 left_speed = msg.data[0] #these indexes can also just be 0 and 1 and it should work
                 right_speed = msg.data[1]
 
-
                 # Ticks conversion
                 left_ticks = int(left_speed * self.TICKS_PER_METER)
                 right_ticks = int(right_speed * self.TICKS_PER_METER)
