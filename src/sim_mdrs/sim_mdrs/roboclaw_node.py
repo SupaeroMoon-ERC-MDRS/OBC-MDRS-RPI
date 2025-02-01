@@ -126,6 +126,7 @@ class RoboclawNode(Node):
         self.robo = Roboclaw(dev_name1, baud_rate)
         self.addresses = [int(128), int(129), int(130)]  # change
         self.gear_ratio = 26.9
+        self.wheel_radius = 0.04
         self.ticks_per_rev = 752
         self.conversion_factor = 1
         self.accel = int(16383/2)
@@ -172,7 +173,7 @@ class RoboclawNode(Node):
     def cmd_vel_motors(self, msg):
         """Handle velocity commands for multiple differential drive motors"""
         try:
-            for address, encoder in zip(self.addresses, self.encodm):
+            for address in self.addresses:
                 left_speed = msg.data[0] #these indexes can also just be 0 and 1 and it should work
                 right_speed = msg.data[1]
 
@@ -180,17 +181,6 @@ class RoboclawNode(Node):
                 qppsm1 = self.vel_to_qpps(right_speed)
                 qppsm2 = self.vel_to_qpps(left_speed)
                 self.robo.DutyAccelM1M2(address, self.accel, qppsm1, self.accel, qppsm2)
-                try:
-                    encoder.print_state(
-                        self.robo.ReadEncM1(address)[1], self.robo.ReadEncM2(address)[1]
-                    )
-                except (OSError, IndexError) as e:
-                    self.get_logger().error(f"Encoder read failed: {str(e)}")
-                    # Optional: Stop motors on failure
-                    self.robo.ForwardM1(address, 0)
-                    self.robo.ForwardM2(address, 0)
-                except Exception as e:
-                    self.get_logger().error(f"Unexpected error: {str(e)}")
 
                 # Update timestamp
                 self.last_set_speed_time = time.time()
@@ -200,7 +190,7 @@ class RoboclawNode(Node):
             self.shutdown()
 
     def vel_to_qpps(self, vel):
-        return int(vel * self.gear_ratio * self.conversion_factor * self.ticks_per_rev / (2 * np.pi)) 
+        return int(vel * self.gear_ratio * self.conversion_factor * self.ticks_per_rev / (2 * np.pi * self.wheel_radius)) 
     # TODO: need clean shutdown so motors stop even if new msgs are arriving
     def shutdown(self):
         self.get_logger().info("Shutting down")
