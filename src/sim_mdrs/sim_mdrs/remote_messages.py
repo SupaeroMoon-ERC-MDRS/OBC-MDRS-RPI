@@ -29,17 +29,17 @@ class RemoteComms(Node):
         self.res = self.nh.parse(protocol)
         
         if self.res != 0:
-            print("Failed to parse UDPCAN protocol, error code:", self.res)
+            self.get_logger().error("Failed to parse UDPCAN protocol, error code:", self.res)
             """Do we need some sort of exit clause here for the error? - ask Em or En when they are freer"""
 
         self.res = self.nh.init()
         if self.res != 0:
-            print("nh Failed to init, error code:", self.res)
+            self.get_logger().error("nh Failed to init, error code:", self.res)
             
         
         self.res = self.nh.start()
         if self.res != 0:
-            print("Failed to start thread, error code:", self.res)
+            self.get_logger().error("Failed to start thread, error code:", self.res)
         
 
         self.remote = self.nh.getRemoteControl() #This creates the higher order structure that contains the data we need to access - MessageWrapper equivalent, I think
@@ -100,9 +100,9 @@ class RemoteComms(Node):
                 self.ThumbRX = self.data.thumb_right_x # int 0-255 
                 self.ThumbRY = self.data.thumb_right_y # int 0-255
 
-                print(self)
+                self.get_logger().error(self)
 
-                print(f"Arm mode? {self.arm_mode}")
+                self.get_logger().error(f"Arm mode? {self.arm_mode}")
 
                 if self.L1 and self.R1:
                     self.arm_mode = not self.arm_mode
@@ -132,7 +132,7 @@ class RemoteComms(Node):
                     ThumbRY: {self.ThumbRY}\n")
     
     def print_remote_data(self):
-        print(f"=================\n\
+        self.get_logger().debug(f"=================\n\
                     LB: {self.data.l_bottom}\n\
                     LT: {self.data.l_top}\n\
                     LR: {self.data.l_right}\n\
@@ -168,9 +168,9 @@ class RemoteComms(Node):
         self.ang_speed = max(min(self.ang_speed, self.max_ang_speed), -self.max_ang_speed)
 
         #print to debug
-        print(f"speeds calculated to send: {self.lin_speed,self.ang_speed}")
+        self.get_logger().debug(f"speeds calculated to send: {self.lin_speed,self.ang_speed}")
         #print to debug
-        print(f"speeds being sent: {self.lin_speed,self.ang_speed}")
+        self.get_logger().debug(f"speeds being sent: {self.lin_speed,self.ang_speed}")
         if self.RB: #normal stop button - values reset to zero before creating and publishing Twist
             self.lin_speed = 0.0
             self.ang_speed = 0.0
@@ -214,7 +214,7 @@ class RemoteComms(Node):
             self.end_grip = True
 
         #print to debug
-        print(f"arm commands to send: {self.arm_x, self.arm_z}")
+        self.get_logger().debug(f"arm commands to send: {self.arm_x, self.arm_z}")
         # #stop button
         if self.RB:
             self.arm_x = 0.0
@@ -225,7 +225,7 @@ class RemoteComms(Node):
 
 
         #print to debug
-        print(f"arm commands being sent: {self.arm_x,self.arm_z}")
+        self.get_logger().error(f"arm commands being sent: {self.arm_x,self.arm_z}")
 
         arm_cmd = Quaternion()
         arm_cmd.x = self.arm_x #x is forward/back
@@ -259,7 +259,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     except Exception as e:
-        node.get_logger().error(e)
+        node.get_logger().error(f"{e}")
     finally:
         node.nh.stop()
         node.destroy_node()
