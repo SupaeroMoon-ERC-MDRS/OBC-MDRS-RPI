@@ -40,7 +40,7 @@ class RemoteComms(Node):
         # then reading the UDPCAN rules from the file
         self.res = self.nh.parse(protocol)
         if self.res != 0:
-            self.get_logger().error("Failed to parse UDPCAN protocol, error code:", self.res)
+            self.get_logger().error(f"Failed to parse UDPCAN protocol, error code: {self.res}")
             raise StopWorthyException(f"UDPCAN Parsing error {self.res} - stopping rover")
 
         self.res = self.nh.init()
@@ -54,7 +54,7 @@ class RemoteComms(Node):
         
         self.res = self.nh.start()
         if self.res != 0:
-            self.get_logger().error("Failed to start thread, error code:", self.res)
+            self.get_logger().error(f"Failed to start thread, error code: {self.res}")
             raise RetryWorthyException(f"UDPCAN start error {self.res} - retrying")
         
 
@@ -116,17 +116,21 @@ class RemoteComms(Node):
                 self.ThumbRX = self.data.thumb_right_x # int 0-255 
                 self.ThumbRY = self.data.thumb_right_y # int 0-255
 
-                self.get_logger().error(self)
+                # self.get_logger().error(self)
 
-                self.get_logger().error(f"Arm mode? {self.arm_mode}")
+                # self.get_logger().error(f"Arm mode? {self.arm_mode}")
 
-                if self.L1 and self.R1:
-                    self.arm_mode = not self.arm_mode
+                # if self.L1 and self.R1:
+                #     if [self.L1,self.R1] != self.prev_toggle:
+                #         self.arm_mode = not self.arm_mode
+                
+                #self.prev_toggle = [self.L1,self.R1]
+                self.prev_cmd = []
 
-                if not self.arm_mode:
-                    self.rover_command()
-                elif self.arm_mode:
-                    self.arm_command()
+                # if not self.arm_mode:
+                #     self.rover_command()
+                # elif self.arm_mode:
+                #     self.arm_command()
 
     def __repr__(self):
         return (f"=================\n\
@@ -255,7 +259,7 @@ class RemoteComms(Node):
             self.cmd_arm_grip_pub.publish(end_cmd)
 
     
-    def emergency_stop(self):
+    def emergency_stop(self, direct = True):
         """Base code for this method, to be developed further"""
         twist = Twist()
         self.cmd_vel_pub.publish(twist)
@@ -265,33 +269,33 @@ class RemoteComms(Node):
         end_cmd = Bool()
         end_cmd.data = False
         self.cmd_arm_grip_pub.publish(end_cmd)
-        raise EmStop("EMERGENCY! Stopping...")
+        if direct:
+            raise EmStop("EMERGENCY! Stopping...")
 
 def main(args=None):
     rclpy.init(args=args)
     node = RemoteComms()
 
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    except EmStop:
-        self.get_logger().error("Emergency stop triggered")
-    except StopWorthyException as e:
-        node.emergency_stop()
-        self.get_logger().error(f"Stopped because of error {e}")
-    except RetryWorthyException as e:
-        self.get_logger().error(f"Encountered error: {e}. Trying again")
-        while e != None:
-            try:
-                rclpy.spin(node) ##would this not just create an infinite loop?
-            except RetryWorthyException as e:
-                continue
-            # node.emergency_stop()
-    finally:
-        node.nh.stop()
-        node.destroy_node()
-        rclpy.shutdown()
+    while True:
 
+        try:
+            rclpy.spin(node)
+        except KeyboardInterrupt:
+            pass
+        except EmStop:
+            node.get_logger().error("Emergency stop triggered")
+            
+            break
+        except StopWorthyException as e:
+            node.emergency_stop(direct = False)
+            node.get_logger().error(f"Stopped because of error {e}")
+            break
+        except RetryWorthyException as e:
+            node.get_logger().error(f"Encountered error: {e}. Trying again")
+            pass
+                # node.emergency_stop()
+    node.nh.stop()
+    node.destroy_node()
+    rclpy.shutdown()
 if __name__ == '__main__':
     main()
