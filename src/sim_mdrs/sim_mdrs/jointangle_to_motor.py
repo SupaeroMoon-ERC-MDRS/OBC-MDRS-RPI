@@ -63,7 +63,7 @@ class ArmCommandNode(Node):
         for idx in self.servo_motors:  # to set angle limits on servo motors
             # check if these intialisation values are correct
             self.kit.servo[idx].actuation_range = 300
-            self.kit.servo[idx].set_pulse_width_range(500, 2500)
+            self.kit.servo[idx].set_pulse_width_range(0, 2000) #checked for shoulder #ch 10
 
         for idx in self.cont_motors:
             ## apparently it's optional to set the pulse width range for the continuous servo
@@ -113,8 +113,8 @@ class ArmCommandNode(Node):
             self.arm_curr_pos[chann] = angle
         elif chann in self.cont_motors:
             ang_diff = angle - self.arm_curr_pos[chann]
-            dt = ang_diff / self.cont_ang_vel
-            self.kit.continuous_servo[chann].throttle = np.sign(ang_diff)*0.3
+            dt = np.mod(ang_diff / self.cont_ang_vel)
+            self.kit.continuous_servo[chann].throttle = np.sign(ang_diff)*0.05
             sleep(dt)
             self.kit.continuous_servo[chann].throttle = 0
             self.arm_curr_pos[chann] = angle
