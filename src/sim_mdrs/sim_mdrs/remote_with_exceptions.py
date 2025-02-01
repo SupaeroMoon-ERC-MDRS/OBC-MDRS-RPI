@@ -40,21 +40,21 @@ class RemoteComms(Node):
         # then reading the UDPCAN rules from the file
         self.res = self.nh.parse(protocol)
         if self.res != 0:
-            print("Failed to parse UDPCAN protocol, error code:", self.res)
+            self.get_logger().error("Failed to parse UDPCAN protocol, error code:", self.res)
             raise StopWorthyException(f"UDPCAN Parsing error {self.res} - stopping rover")
 
         self.res = self.nh.init()
         if self.res != 0:
             if self.res == 1025:
-                print(f"Bind error - error code: {self.res}")
+                self.get_logger().error(f"Bind error - error code: {self.res}")
                 raise StopWorthyException(f"Bind error {self.res}, please check if another process is using this port")
-            print("nh Failed to init, error code:", self.res)
+            self.get_logger().error(f"nh Failed to init, error code:{self.res}")
             raise RetryWorthyException(f"UDPCAN initiation error {self.res} - retrying")
             
         
         self.res = self.nh.start()
         if self.res != 0:
-            print("Failed to start thread, error code:", self.res)
+            self.get_logger().error("Failed to start thread, error code:", self.res)
             raise RetryWorthyException(f"UDPCAN start error {self.res} - retrying")
         
 
@@ -116,9 +116,9 @@ class RemoteComms(Node):
                 self.ThumbRX = self.data.thumb_right_x # int 0-255 
                 self.ThumbRY = self.data.thumb_right_y # int 0-255
 
-                print(self)
+                self.get_logger().error(self)
 
-                print(f"Arm mode? {self.arm_mode}")
+                self.get_logger().error(f"Arm mode? {self.arm_mode}")
 
                 if self.L1 and self.R1:
                     self.arm_mode = not self.arm_mode
@@ -148,7 +148,7 @@ class RemoteComms(Node):
                     ThumbRY: {self.ThumbRY}\n")
     
     def print_remote_data(self):
-        print(f"=================\n\
+        self.get_logger().debug(f"=================\n\
                     LB: {self.data.l_bottom}\n\
                     LT: {self.data.l_top}\n\
                     LR: {self.data.l_right}\n\
@@ -184,9 +184,9 @@ class RemoteComms(Node):
         self.ang_speed = max(min(self.ang_speed, self.max_ang_speed), -self.max_ang_speed)
 
         #print to debug
-        print(f"speeds calculated to send: {self.lin_speed,self.ang_speed}")
+        self.get_logger().debug(f"speeds calculated to send: {self.lin_speed,self.ang_speed}")
         #print to debug
-        print(f"speeds being sent: {self.lin_speed,self.ang_speed}")
+        self.get_logger().debug(f"speeds being sent: {self.lin_speed,self.ang_speed}")
         if self.RB: #normal stop button - values reset to zero before creating and publishing Twist
             self.lin_speed = 0.0
             self.ang_speed = 0.0
@@ -230,7 +230,7 @@ class RemoteComms(Node):
             self.end_grip = True
 
         #print to debug
-        print(f"arm commands to send: {self.arm_x, self.arm_z}")
+        self.get_logger().debug(f"arm commands to send: {self.arm_x, self.arm_z}")
         # #stop button
         if self.RB:
             self.arm_x = 0.0
@@ -241,7 +241,7 @@ class RemoteComms(Node):
 
 
         #print to debug
-        print(f"arm commands being sent: {self.arm_x,self.arm_z}")
+        self.get_logger().debug(f"arm commands being sent: {self.arm_x,self.arm_z}")
 
         arm_cmd = Quaternion()
         arm_cmd.x = self.arm_x #x is forward/back
@@ -276,12 +276,12 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     except EmStop:
-        print("Emergency stop triggered")
+        self.get_logger().error("Emergency stop triggered")
     except StopWorthyException as e:
         node.emergency_stop()
-        print(f"Stopped because of error {e}")
+        self.get_logger().error(f"Stopped because of error {e}")
     except RetryWorthyException as e:
-        print(f"Encountered error: {e}. Trying again")
+        self.get_logger().error(f"Encountered error: {e}. Trying again")
         while e != None:
             try:
                 rclpy.spin(node) ##would this not just create an infinite loop?
