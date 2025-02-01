@@ -1,4 +1,4 @@
-import roboclaw_driver as roboclaw
+from roboclaw_driver import Roboclaw
 import time
 import numpy as np
 import logging
@@ -115,46 +115,82 @@ class Node:
         #                0x4000: (logging.warning("M1 home")),
         #                0x8000: (logging.warning("M2 home"))}
         
-        self.address = int(128)
-        dev_name = "/dev/ttyAMA0"
-        baud_rate = 115200
-
-        self.robo = roboclaw.Roboclaw(dev_name, baud_rate)
-
-
-        try:
-            self.robo.Open()
-            print("Opened connection")
-        except Exception as e:
-            print("Could not connect to Roboclaw")
-            raise(e)
         
-        # self.updater = diagnostic_updater.Updater()
-        # self.updater.setHardwareID("Roboclaw")
-        # self.updater.add(diagnostic_updater.
-        #                  FunctionDiagnosticTask("Vitals", self.check_vitals))
+        self.address = int(128)
+        dev_name = "COM3"
+        baud_rate = 115200
+        self.robo = Roboclaw(dev_name, baud_rate)
+        self.addresses = [int(128)] #, int(129), int(130)]  # change
+
+        print("Starting motor drives")
 
         try:
-            version = self.robo.ReadVersion(self.address)
+            if self.robo.Open():
+                print("Successfully opened serial communications")
         except Exception as e:
-            print("Problem getting roboclaw version")
-            print(e)
-            pass
+            print("Could not connect to Roboclaw: %s", e)
+            raise e
+        
 
-        if not version[0]:
-            print("Could not get version from roboclaw")
-        else:
-            print(repr(version[1]))
+        for address in self.addresses:
+            try:
+                print(f"Attempting to talk to motor controller {address} through serial port {dev_name} at a {baud_rate} baud_rate.")
+                version = self.robo.ReadVersion(address)
+                print(f"response for RC at {address}: {version}")
+                if version[0]:
+                    print(f"Roboclaw Version: {repr(version[1])}")
+                else:
+                    print("Could not get version from Roboclaw")
+            except Exception as e:
+                print("Could not connect to Roboclaw: %s", e)
+                raise e
+            self.robo.SpeedM1M2(address, 0, 0)
+            # self.robo.ResetEncoders(address)
 
-        self.robo.SpeedM1M2(self.address, 0, 0)
-        self.robo.ResetEncoders(self.address)
-
-        self.MAX_SPEED = 2.0
-        self.TICKS_PER_METER = 4342.2
-        self.BASE_WIDTH = 0.315
-
-        self.encodm = EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH)
+        self.MAX_SPEED = 2.0  # to be tested
+        self.TICKS_PER_METER = 4342.2  # to be tested
+        self.BASE_WIDTH = 0.315  # to be checked
         self.last_set_speed_time = time.time()
+
+
+
+
+        # self.robo = roboclaw.Roboclaw(dev_name, baud_rate)
+
+
+        # try:
+        #     self.robo.Open()
+        #     print("Opened connection")
+        # except Exception as e:
+        #     print("Could not connect to Roboclaw")
+        #     raise(e)
+        
+        # # self.updater = diagnostic_updater.Updater()
+        # # self.updater.setHardwareID("Roboclaw")
+        # # self.updater.add(diagnostic_updater.
+        # #                  FunctionDiagnosticTask("Vitals", self.check_vitals))
+
+        # try:
+        #     version = self.robo.ReadVersion(self.address)
+        # except Exception as e:
+        #     print("Problem getting roboclaw version")
+        #     print(e)
+        #     pass
+
+        # if not version[0]:
+        #     print("Could not get version from roboclaw")
+        # else:
+        #     print(repr(version[1]))
+
+        # self.robo.SpeedM1M2(self.address, 0, 0)
+        # self.robo.ResetEncoders(self.address)
+
+        # self.MAX_SPEED = 2.0
+        # self.TICKS_PER_METER = 4342.2
+        # self.BASE_WIDTH = 0.315
+
+        # self.encodm = EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH)
+        # self.last_set_speed_time = time.time()
 
 
         print("dev %s", dev_name)

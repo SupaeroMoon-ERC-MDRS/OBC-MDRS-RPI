@@ -711,6 +711,7 @@ class Roboclaw:
 		trys=self._trystimeout
 		while 1:
 			self._port.flushInput()
+			print("test")
 			self._sendcommand(address,self.Cmd.GETVERSION)
 			str = ""
 			passed = True

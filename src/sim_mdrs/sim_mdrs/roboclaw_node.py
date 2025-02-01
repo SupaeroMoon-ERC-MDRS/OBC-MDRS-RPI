@@ -124,7 +124,7 @@ class RoboclawNode(Node):
 
 
         self.robo = Roboclaw(dev_name1, baud_rate)
-        self.addresses = [int(130)] #, int(129), int(130)]  # change
+        self.addresses = [int(128), int(129), int(130)]  # change
 
         print("Starting motor drives")
 
@@ -157,10 +157,10 @@ class RoboclawNode(Node):
         self.last_set_speed_time = time.time()
 
         self.encodm = [
-            EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH)]#,
-        #     EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
-        #     EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
-        # ]
+            EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
+            EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
+            EncoderOdom(self.TICKS_PER_METER, self.BASE_WIDTH),
+        ]
 
         self.get_logger().info("Roboclaw Node Initialized")
 
