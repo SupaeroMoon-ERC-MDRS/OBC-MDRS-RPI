@@ -3,24 +3,25 @@ from rclpy.node import Node
 from std_msgs.msg import Float64MultiArray
 import roboclaw_driver as roboclaw
 
-class RoboclawCommandNode(Node):
+class RoboclawNode(Node):
     def __init__(self):
         super().__init__("roboclaw_command_node")
 
         # Initialize parameters
-        self.address = self.declare_parameter("roboclaw_address", 128).get_parameter_value().integer_value
-        self.dev_name = self.declare_parameter("device", "/dev/ttyUSB0").get_parameter_value().string_value
-        self.baud_rate = self.declare_parameter("baud_rate", 115200).get_parameter_value().integer_value
-        self.ticks_per_meter = self.declare_parameter("ticks_per_meter", 4342.2).get_parameter_value().double_value
+        self.addresses = [int(128),int(129),int(130)]
+        self.dev_name = "/dev/ttyAMA0"
+        self.baud_rate = 115200
+        self.ticks_per_meter = 4342.2
 
         # Initialize Roboclaw driver
         self.robo = roboclaw.Roboclaw(self.dev_name, self.baud_rate)
+        self.get_logger().info("Starting motor drives")
         try:
             self.robo.Open()
             self.get_logger().info("Connected to Roboclaw on " + self.dev_name)
         except Exception as e:
             self.get_logger().error("Could not connect to Roboclaw: " + str(e))
-            raise e
+            raise
 
         # Subscribe to wheel commands from /wheel_controller/commands
         self.subscription = self.create_subscription(
@@ -30,7 +31,7 @@ class RoboclawCommandNode(Node):
     def wheel_command_callback(self, msg):
         """ Processes wheel velocity commands and sends to Roboclaw """
         if len(msg.data) != 6:
-            self.get_logger().warn("Received incorrect number of wheel commands. Expected 6 values.")
+            self.get_logger().warning("Received incorrect number of wheel commands. Expected 6 values.")
             return
 
         left_speed = msg.data[0]  # All left wheels have the same speed
@@ -42,17 +43,40 @@ class RoboclawCommandNode(Node):
 
         # Send speed commands to Roboclaw
         try:
-            self.robo.SpeedM1M2(self.address, right_ticks, left_ticks)
-            self.get_logger().info(f"Sent wheel speeds: Right = {right_ticks}, Left = {left_ticks}")
+            for claw in self.addresses:
+                self.robo.SpeedM1M2(claw, right_ticks, left_ticks)
+                self.get_logger().info(f"Sent wheel speeds: Right = {right_ticks}, Left = {left_ticks}")
         except Exception as e:
             self.get_logger().error("Error sending speed commands: " + str(e))
+            #self.shutdown()
+
+    # need clean shutdown so motors stop even if new msgs are arriving
+    def shutdown(self):
+        self.get_logger().info("Shutting down")
+        try:
+            for address in self.addresses:
+                self.robo.ForwardM1(address, 0)
+                self.robo.ForwardM2(address, 0)
+        except OSError:
+            self.get_logger().info("Shutdown did not work trying again")
+            try:
+                for address in self.addresses:
+                    self.robo.ForwardM1(address, 0)
+                    self.robo.ForwardM2(address, 0)
+            except OSError as e:
+                self.get_logger().error(f"Could not shutdown motors!!! Error {e}")
 
 def main(args=None):
     rclpy.init(args=args)
-    node = RoboclawCommandNode()
-    rclpy.spin(node)
-    node.destroy_node()
-    rclpy.shutdown()
+    node = RoboclawNode()
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+    finally:
+        node.shutdown()
+        node.destroy_node()
+        rclpy.shutdown()
 
 if __name__ == "__main__":
     main()

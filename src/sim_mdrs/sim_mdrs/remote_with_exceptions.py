@@ -276,9 +276,14 @@ def main(args=None):
         print("Emergency stop triggered")
     except StopWorthyException as e:
         node.emergency_stop()
-        print(e)
-    #except RetryWorthyException as e:
-    #    rclpy.spin(node) ##would this not just create an infinite loop?
+        print(f"Stopped because of error {e}")
+    except RetryWorthyException as e:
+        try:
+            print(f"Encountered error: {e}. Trying again")
+            rclpy.spin(node) ##would this not just create an infinite loop?
+        except RetryWorthyException as e:
+            print(f"Encountered error once again: {e}. Stopping")
+            node.emergency_stop()
     finally:
         node.nh.stop()
         node.destroy_node()
