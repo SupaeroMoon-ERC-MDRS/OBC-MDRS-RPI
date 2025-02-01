@@ -41,18 +41,21 @@ class RemoteComms(Node):
         self.res = self.nh.parse(protocol)
         if self.res != 0:
             print("Failed to parse UDPCAN protocol, error code:", self.res)
-            raise StopWorthyException("UDPCAN Parsing error - stopping rover")
+            raise StopWorthyException(f"UDPCAN Parsing error {self.res} - stopping rover")
 
         self.res = self.nh.init()
         if self.res != 0:
+            if self.res == 1025:
+                print(f"Bind error - error code: {self.res}")
+                raise StopWorthyException(f"Bind error {self.res}, please check if another process is using this port")
             print("nh Failed to init, error code:", self.res)
-            raise RetryWorthyException("UDPCAN initiation error - retrying")
+            raise RetryWorthyException(f"UDPCAN initiation error {self.res} - retrying")
             
         
         self.res = self.nh.start()
         if self.res != 0:
             print("Failed to start thread, error code:", self.res)
-            raise RetryWorthyException("UDPCAN start error - retrying")
+            raise RetryWorthyException(f"UDPCAN start error {self.res} - retrying")
         
 
         self.remote = self.nh.getRemoteControl() #This creates the higher order structure that contains the data we need to access - MessageWrapper equivalent, I think
@@ -262,7 +265,7 @@ class RemoteComms(Node):
         end_cmd = Bool()
         end_cmd.data = False
         self.cmd_arm_grip_pub.publish(end_cmd)
-        raise StopWorthyException("EMERGENCY! Stopping...")
+        raise EmStop("EMERGENCY! Stopping...")
 
 def main(args=None):
     rclpy.init(args=args)
@@ -278,12 +281,13 @@ def main(args=None):
         node.emergency_stop()
         print(f"Stopped because of error {e}")
     except RetryWorthyException as e:
-        try:
-            print(f"Encountered error: {e}. Trying again")
-            rclpy.spin(node) ##would this not just create an infinite loop?
-        except RetryWorthyException as e:
-            print(f"Encountered error once again: {e}. Stopping")
-            node.emergency_stop()
+        print(f"Encountered error: {e}. Trying again")
+        while e != None:
+            try:
+                rclpy.spin(node) ##would this not just create an infinite loop?
+            except RetryWorthyException as e:
+                continue
+            # node.emergency_stop()
     finally:
         node.nh.stop()
         node.destroy_node()
