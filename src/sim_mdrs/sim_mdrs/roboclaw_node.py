@@ -125,6 +125,10 @@ class RoboclawNode(Node):
 
         self.robo = Roboclaw(dev_name1, baud_rate)
         self.addresses = [int(128), int(129), int(130)]  # change
+        self.gear_ratio = 26.9
+        self.ticks_per_rev = 752
+        self.conversion_factor = 8
+        self.accel = 16383
 
         print("Starting motor drives")
 
@@ -148,7 +152,8 @@ class RoboclawNode(Node):
             except Exception as e:
                 self.get_logger().error("Could not connect to Roboclaw: %s", e)
                 raise e
-            self.robo.SpeedM1M2(address, 0, 0)
+            self.robo.ForwardM1(address, 0)
+            self.robo.ForwardM2(address, 0)
             # self.robo.ResetEncoders(address)
 
         self.MAX_SPEED = 2.0  # to be tested
@@ -174,8 +179,9 @@ class RoboclawNode(Node):
                 # Ticks conversion
                 left_ticks = int(left_speed * self.TICKS_PER_METER)
                 right_ticks = int(right_speed * self.TICKS_PER_METER)
-
-                self.robo.SpeedM1M2(address, right_ticks, left_ticks)
+                qppsm1 = self.vel_to_qpps(right_ticks)
+                qppsm2 = self.vel_to_qpps(left_ticks)
+                self.robo.DutyAccelM1M2(address, self.accel, qppsm1, self.accel, qppsm2)
                 try:
                     encoder.print_state(
                         self.robo.ReadEncM1(address)[1], self.robo.ReadEncM2(address)[1]
@@ -195,6 +201,8 @@ class RoboclawNode(Node):
             self.get_logger().error(f"Motor command failed: {str(e)}")
             self.shutdown()
 
+    def vel_to_qpps(self, vel):
+        return int(vel * self.gear_ratio * self.ticks_per_rev / (2 * np.pi))
     # TODO: need clean shutdown so motors stop even if new msgs are arriving
     def shutdown(self):
         self.get_logger().info("Shutting down")
