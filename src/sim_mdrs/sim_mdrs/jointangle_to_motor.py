@@ -32,25 +32,27 @@ class ArmCommandNode(Node):
         }  # will need to ensure this index  mapping matches the channels - else alter code a bit
         self.arm_init_pos = {
             ##safe position - also needs to be found - currently same as placeholder home position
+            ## angles relative to local vertical - need to convert to 0 to 180 - relative to horizontal
             4: 90,
-            11: -45,
-            10: 150,
-            9: 150
+            11: -82,
+            10: 142,
+            9: -60
         }
-        self.arm_curr_pos = self.arm_init_pos
-        self.joint_lims = {
-            ## to be reviewed
-            4: [0,180],
-            11: [-45,110],
-            10: [-90,170],
-            9: [-170,170]
-        }
+        self.arm_curr_pos = self.arm_init_posself.arm_curr_pos = self.arm_init_pos
+        # self.joint_lims = {
+        #     ## to be reviewed
+        #     4: [0,180],
+        #     11: [-45,110],
+        #     10: [-90,170],
+        #     9: [-170,170]
+        # }
         self.home_pos = {
             ## need to find and test
+            #angles relative to the vertical
             4: 90,
-            11: -45,
-            10: 150,
-            9: 150
+            11: -53,
+            10: 94,
+            9: 90
         }
         """Check if some channel mapping is required to identify the joints"""
         sleep(0.1)
@@ -58,7 +60,9 @@ class ArmCommandNode(Node):
         # Initialising some characterisitcs of the motors
         self.servo_motors = [9]
         self.cont_motors = [4, 11, 10]
-        self.cont_ang_vel = 360  # deg/s #how do we know this?
+        self.cont_ang_vel = 366  # deg/s #how do we know this? apparently from 61 rev/m (data sheet, peut-etre)
+        self.vel_mod = 0.05
+
 
         for idx in self.servo_motors:  # to set angle limits on servo motors
             # check if these intialisation values are correct
@@ -104,24 +108,32 @@ class ArmCommandNode(Node):
         # In case input joint is the name and not the index, get index from mapping
         chann = self.joint_channels[joint]
 
-        # Ensure angle is within valid range
-        if angle < self.joint_lims[chann][0] or angle > self.joint_lims[chann][1]:  # may not be required
-            raise ValueError("Angle must be within range")
+        # Ensure angle is within valid range - needs to be done in remote_arm
+        # if angle < self.joint_lims[chann][0] or angle > self.joint_lims[chann][1]:  # may not be required
+        #     raise ValueError("Angle must be within range")
 
         if chann in self.servo_motors:
             self.kit.servo[chann].angle = angle
             self.arm_curr_pos[chann] = angle
         elif chann in self.cont_motors:
             ang_diff = angle - self.arm_curr_pos[chann]
-            dt = np.mod(ang_diff / self.cont_ang_vel)
-            self.kit.continuous_servo[chann].throttle = np.sign(ang_diff)*0.05
+            dt = np.mod(ang_diff / self.cont_ang_vel*self.vel_mod)
+            self.kit.continuous_servo[chann].throttle = np.sign(ang_diff)*self.vel_mod
             sleep(dt)
             self.kit.continuous_servo[chann].throttle = 0
             self.arm_curr_pos[chann] = angle
     
     def go_home(self):
-        for joint in self.home_pos.keys():
-            self.run_motor(joint,self.home_pos(joint))
+        self.run_motor('joint3',-53) #shoulder first #30 deg forward
+        self.run_motor('joint2',90) #base first #0 deg
+        self.run_motor('joint5', 60) #wrist partial #120 deg forward
+        self.run_motor('joint4',94) #elbow #48 degrees backward
+        self.run_motor('joint5',90) #wrist final #30 deg forward
+        self.arm_curr_pos = self.home_pos
+
+    def return_home(self):
+        for joint in self.joint_channels.keys():
+            self.run_motor(joint,self.home_pos(self.joint_channels[joint]))
         self.arm_curr_pos = self.home_pos
 
         # Convert angle to PWM signal
