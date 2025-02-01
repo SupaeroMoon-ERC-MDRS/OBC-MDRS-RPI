@@ -17,7 +17,7 @@ from time import sleep  # Imports sleep (aka wait or pause) into the program
 # GPIO.setmode(GPIO.BOARD) # Sets the pin numbering system to use the physical layout
 
 
-class MotorControlNode(Node):
+class ArmCommandNode(Node):
     def __init__(self):
         super().__init__("motor_control_node")
 
@@ -25,24 +25,39 @@ class MotorControlNode(Node):
 
         # Define mapping of joints to PCA9685 channels
         self.joint_channels = {
-            "joint2": 0,
-            "joint3": 1,
-            "joint4": 2,
-            "joint5": 3,
+            "joint2": 4,
+            "joint3": 11,
+            "joint4": 10,
+            "joint5": 9,
         }  # will need to ensure this index  mapping matches the channels - else alter code a bit
-        self.arm_curr_pos = [
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-            0.0,
-        ]  # 1st is imaginary, and there's no gripper here #this should
+        self.arm_init_pos = {
+            ##safe position - also needs to be found - currently same as placeholder home position
+            4: 90,
+            11: -45,
+            10: 150,
+            9: 150
+        }
+        self.arm_curr_pos = self.arm_init_pos
+        self.joint_lims = {
+            ## to be reviewed
+            4: [0,180],
+            11: [-45,110],
+            10: [-90,170],
+            9: [-170,170]
+        }
+        self.home_pos = {
+            ## need to find and test
+            4: 90,
+            11: -45,
+            10: 150,
+            9: 150
+        }
         """Check if some channel mapping is required to identify the joints"""
         sleep(0.1)
 
         # Initialising some characterisitcs of the motors
-        self.servo_motors = [3]
-        self.cont_motors = [0, 1, 2]
+        self.servo_motors = [9]
+        self.cont_motors = [4, 11, 10]
         self.cont_ang_vel = 360  # deg/s #how do we know this?
 
         for idx in self.servo_motors:  # to set angle limits on servo motors
@@ -54,9 +69,7 @@ class MotorControlNode(Node):
             ## apparently it's optional to set the pulse width range for the continuous servo
             # self.kit.continuous_servo[idx].set_pulse_width_range(500, 2500)
             # important thing is to set them all to zero to begin with
-            self.kit.continuous_servo[
-                idx
-            ].throttle = 0  # throttle values go from -1.0 to 1.0
+            self.kit.continuous_servo[idx].throttle = 0  # throttle values go from -1.0 to 1.0
 
         self.subscription = self.create_subscription(
             JointTrajectory,
@@ -65,7 +78,7 @@ class MotorControlNode(Node):
             10,  # QoS
         )
         self.get_logger().info(
-            'MotorControlNode started. Listening for angle input on "motor_angle" topic.'
+            'MotorControlNode started. Listening for angle input on "joint_trajectory" topic.'
         )
 
     def angle_callback(self, msg):
@@ -79,34 +92,37 @@ class MotorControlNode(Node):
             try:
                 self.run_motor(joint, angle)
                 self.get_logger().info(
-                    f"Received angle: {angle}° and applied PWM signal."
+                    f"Received angle: {angle}° and sent motor signal."
                 )
             except ValueError as e:
                 self.get_logger().error(str(e))
 
     def run_motor(self, joint, angle):  # assuming this joint is the index not the name
         """
-        Convert an angle to PWM and run the motor on the specified channel.
+        Convert an angle to Servokit command and run the motor on the specified channel.
         """
         # In case input joint is the name and not the index, get index from mapping
-        joint = self.joint_channels[joint]
+        chann = self.joint_channels[joint]
 
         # Ensure angle is within valid range
-        if angle < 0 or angle > 180:  # may not be required
-            raise ValueError("Angle must be between 0 and 180 degrees.")
+        if angle < self.joint_lims[chann][0] or angle > self.joint_lims[chann][1]:  # may not be required
+            raise ValueError("Angle must be within range")
 
-        if joint in self.servo_motors:
-            self.kit.servo[joint].angle = angle
-            self.arm_curr_pos[joint] = angle
-        elif joint in self.cont_motors:
-            ang_diff = angle - self.arm_curr_pos[joint]
+        if chann in self.servo_motors:
+            self.kit.servo[chann].angle = angle
+            self.arm_curr_pos[chann] = angle
+        elif chann in self.cont_motors:
+            ang_diff = angle - self.arm_curr_pos[chann]
             dt = ang_diff / self.cont_ang_vel
-            self.kit.continuous_servo[joint].throttle = np.sign(ang_diff)*0.5
+            self.kit.continuous_servo[chann].throttle = np.sign(ang_diff)*0.3
             sleep(dt)
-            self.kit.continuous_servo[joint].throttle = 0
-            self.arm_curr_pos[joint] = angle
-
-        # self.set_angle(self.joint_pins[joint], angle)
+            self.kit.continuous_servo[chann].throttle = 0
+            self.arm_curr_pos[chann] = angle
+    
+    def go_home(self):
+        for joint in self.home_pos.keys():
+            self.run_motor(joint,self.home_pos(joint))
+        self.arm_curr_pos = self.home_pos
 
         # Convert angle to PWM signal
         # min_pulse = 1000  # Min pulse length in microseconds
@@ -119,13 +135,16 @@ class MotorControlNode(Node):
         """
         Cleanup resources.
         """
+        self.go_home()
+        self.get_logger().info("Returning to home position")
+
         self.pca.deinit()
         super().destroy_node()
 
 
 def main(args=None):
     rclpy.init(args=args)
-    node = MotorControlNode()
+    node = ArmCommandNode()
     try:
         rclpy.spin(node)
     except KeyboardInterrupt:
