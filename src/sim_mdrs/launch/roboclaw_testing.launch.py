@@ -6,16 +6,16 @@ def generate_launch_description():
         Node(
             package='sim_mdrs',
             executable='remote_messages',
-            name='talker_node'
+            name='Remote_control_node'
         ),
         Node(
             package='sim_mdrs',
             executable='diff_controller',
-            name='listener_node'
+            name='Differential_Controller_Node'
         ),
         Node(
             package='sim_mdrs',
             executable='roboclaw_node',
-            name='listener_node'
+            name='Roboclaw_control_node'
         )
     ])
