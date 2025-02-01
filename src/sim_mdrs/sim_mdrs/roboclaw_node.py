@@ -127,7 +127,7 @@ class RoboclawNode(Node):
         self.addresses = [int(128), int(129), int(130)]  # change
         self.gear_ratio = 26.9
         self.ticks_per_rev = 752
-        self.conversion_factor = 8
+        self.conversion_factor = 4
         self.accel = int(16383/2)
 
         print("Starting motor drives")
