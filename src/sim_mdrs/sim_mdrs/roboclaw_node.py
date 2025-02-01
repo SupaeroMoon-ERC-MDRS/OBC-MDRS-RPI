@@ -138,7 +138,9 @@ class RoboclawNode(Node):
 
         for address in self.addresses:
             try:
+                self.get_logger().debug(f"Attempting to talk to motor controller {address} through serial port {dev_name1} at a {baud_rate} baud_rate.")
                 version = self.robo.ReadVersion(address)
+                self.log.debug(f"response for RC at {address}: {version}")
                 if version[0]:
                     self.get_logger().info(f"Roboclaw Version: {repr(version[1])}")
                 else:

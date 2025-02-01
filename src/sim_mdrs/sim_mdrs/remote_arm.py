@@ -48,7 +48,6 @@ class ArmController(Node):
 
     def update_arm_position(self, ind, direction):
         self.arm_pos[ind] += direction * self.linear_increment
-        ## Check if arm_pos is within sphere of motion
         self.cart_to_joints()
         self.send_command()
 
