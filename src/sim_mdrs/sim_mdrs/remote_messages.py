@@ -259,7 +259,7 @@ def main(args=None):
     except KeyboardInterrupt:
         pass
     except Exception as e:
-        self.get_logger().error(e)
+        node.get_logger().error(e)
     finally:
         node.nh.stop()
         node.destroy_node()
