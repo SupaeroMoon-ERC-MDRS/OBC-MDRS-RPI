@@ -117,7 +117,7 @@ class RoboclawNode(Node):
             Float64MultiArray, "/wheel_controller/commands", self.cmd_vel_motors, 10
         )
 
-        #logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
+        # logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
 
         baud_rate = 115200
         dev_name1 = "/dev/ttyAMA0"  # change
@@ -138,9 +138,9 @@ class RoboclawNode(Node):
 
         for address in self.addresses:
             try:
-                self.get_logger().debug(f"Attempting to talk to motor controller {address} through serial port {dev_name1} at a {baud_rate} baud_rate.")
+                self.get_logger().info(f"Attempting to talk to motor controller {address} through serial port {dev_name1} at a {baud_rate} baud_rate.")
                 version = self.robo.ReadVersion(address)
-                self.get_logger().debug(f"response for RC at {address}: {version}")
+                self.get_logger().info(f"response for RC at {address}: {version}")
                 if version[0]:
                     self.get_logger().info(f"Roboclaw Version: {repr(version[1])}")
                 else:
@@ -149,7 +149,7 @@ class RoboclawNode(Node):
                 self.get_logger().error("Could not connect to Roboclaw: %s", e)
                 raise e
             self.robo.SpeedM1M2(address, 0, 0)
-            self.robo.ResetEncoders(address)
+            # self.robo.ResetEncoders(address)
 
         self.MAX_SPEED = 2.0  # to be tested
         self.TICKS_PER_METER = 4342.2  # to be tested
