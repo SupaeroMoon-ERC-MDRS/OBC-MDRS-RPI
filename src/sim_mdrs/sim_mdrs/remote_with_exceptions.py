@@ -91,7 +91,7 @@ class RemoteComms(Node):
 
         """Q for Emma - do I create a timer? - yes"""
         # Timer to run remote input method repeatedly once the Node is initialised
-        self.timer = self.create_timer(0.1,self.remote_input)
+        self.timer = self.create_timer(0.2,self.remote_input)
 
     def remote_input(self):
        ## main method to access the input message from the remote control and publish to topic
@@ -99,7 +99,7 @@ class RemoteComms(Node):
             self.emergency_stop()
         elif not self.e_stop:
             self.res = self.remote.access(self.data) #accesses message within remote and puts it into the data object (RemoteControl object)
-            if self.res != 0:
+            if self.res >= 1024:
                 self.get_logger().error(f"Could not access remote data, error code: {self.res}")
                 raise RetryWorthyException(f"Remote message access error {self.res} - retrying")
             elif self.res == 0: #no error code
