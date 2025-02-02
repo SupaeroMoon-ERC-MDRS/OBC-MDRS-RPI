@@ -1,5 +1,5 @@
 ## To create a ROS node to process incoming messages from the remote control
-"""Untested code for now"""
+"""To be tested"""
 from udpcanpy import NetworkHandler, RemoteControl #to access the UPDCAN protocol
 import rclpy
 from rclpy.node import Node
@@ -67,16 +67,18 @@ class RemoteComms(Node):
         ## Toggle to switch between different modes
         self.arm_mode = False #rover mode by default
 
+        self.prev_cmd = [] #for remote control rising edge
+
         ##initialise rover control variables - follow Emma's keyboard controls py file as template for updating and packaging as Twist
         self.lin_speed = 0.0
         self.ang_speed = 0.0
         
         # values by which to increment the speeds when a button is pressed
-        self.lin_inc = 0.1
+        self.lin_inc = 0.07
         self.ang_inc = 0.2
 
         # setting max limits
-        self.max_lin_speed = 5.0
+        self.max_lin_speed = 3.0
         self.max_ang_speed = 3.0
 
         ##initialise arm control variables
@@ -97,7 +99,10 @@ class RemoteComms(Node):
             self.emergency_stop()
         elif not self.e_stop:
             self.res = self.remote.access(self.data) #accesses message within remote and puts it into the data object (RemoteControl object)
-            if self.res == 0: #no error code
+            if self.res != 0:
+                self.get_logger().error(f"Could not access remote data, error code: {self.res}")
+                raise RetryWorthyException(f"Remote message access error {self.res} - retrying")
+            elif self.res == 0: #no error code
                 self.e_stop = self.data.e_stop # bool # overwriting emergency stop variable with actual input
                 self.LB = self.data.l_bottom # bool
                 self.LT = self.data.l_top # bool
@@ -125,12 +130,16 @@ class RemoteComms(Node):
                 #         self.arm_mode = not self.arm_mode
                 
                 #self.prev_toggle = [self.L1,self.R1]
-                self.prev_cmd = []
+
+                if [self.LT,self.LB,self.LL,self.LR] != self.prev_cmd:
+                    self.rover_command()
 
                 # if not self.arm_mode:
                 #     self.rover_command()
                 # elif self.arm_mode:
                 #     self.arm_command()
+
+                self.prev_cmd = [self.LT,self.LB,self.LL,self.LR]
 
     def __repr__(self):
         return (f"=================\n\
@@ -260,7 +269,7 @@ class RemoteComms(Node):
 
     
     def emergency_stop(self, direct = True):
-        """Base code for this method, to be developed further"""
+        # Send 0 velocities when emergency stopped
         twist = Twist()
         self.cmd_vel_pub.publish(twist)
 
