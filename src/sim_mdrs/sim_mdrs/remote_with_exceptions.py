@@ -1,5 +1,5 @@
 ## To create a ROS node to process incoming messages from the remote control
-"""Untested code for now"""
+"""To be tested"""
 from udpcanpy import NetworkHandler, RemoteControl #to access the UPDCAN protocol
 import rclpy
 from rclpy.node import Node
@@ -40,7 +40,7 @@ class RemoteComms(Node):
         # then reading the UDPCAN rules from the file
         self.res = self.nh.parse(protocol)
         if self.res != 0:
-            self.get_logger().error("Failed to parse UDPCAN protocol, error code:", self.res)
+            self.get_logger().error(f"Failed to parse UDPCAN protocol, error code: {self.res}")
             raise StopWorthyException(f"UDPCAN Parsing error {self.res} - stopping rover")
 
         self.res = self.nh.init()
@@ -54,7 +54,7 @@ class RemoteComms(Node):
         
         self.res = self.nh.start()
         if self.res != 0:
-            self.get_logger().error("Failed to start thread, error code:", self.res)
+            self.get_logger().error(f"Failed to start thread, error code: {self.res}")
             raise RetryWorthyException(f"UDPCAN start error {self.res} - retrying")
         
 
@@ -67,16 +67,18 @@ class RemoteComms(Node):
         ## Toggle to switch between different modes
         self.arm_mode = False #rover mode by default
 
+        self.prev_cmd = [] #for remote control rising edge
+
         ##initialise rover control variables - follow Emma's keyboard controls py file as template for updating and packaging as Twist
         self.lin_speed = 0.0
         self.ang_speed = 0.0
         
         # values by which to increment the speeds when a button is pressed
-        self.lin_inc = 0.1
+        self.lin_inc = 0.07
         self.ang_inc = 0.2
 
         # setting max limits
-        self.max_lin_speed = 5.0
+        self.max_lin_speed = 3.0
         self.max_ang_speed = 3.0
 
         ##initialise arm control variables
@@ -97,7 +99,10 @@ class RemoteComms(Node):
             self.emergency_stop()
         elif not self.e_stop:
             self.res = self.remote.access(self.data) #accesses message within remote and puts it into the data object (RemoteControl object)
-            if self.res == 0: #no error code
+            if self.res != 0:
+                self.get_logger().error(f"Could not access remote data, error code: {self.res}")
+                raise RetryWorthyException(f"Remote message access error {self.res} - retrying")
+            elif self.res == 0: #no error code
                 self.e_stop = self.data.e_stop # bool # overwriting emergency stop variable with actual input
                 self.LB = self.data.l_bottom # bool
                 self.LT = self.data.l_top # bool
@@ -116,17 +121,25 @@ class RemoteComms(Node):
                 self.ThumbRX = self.data.thumb_right_x # int 0-255 
                 self.ThumbRY = self.data.thumb_right_y # int 0-255
 
-                self.get_logger().error(self)
+                # self.get_logger().error(self)
 
-                self.get_logger().error(f"Arm mode? {self.arm_mode}")
+                # self.get_logger().error(f"Arm mode? {self.arm_mode}")
 
-                if self.L1 and self.R1:
-                    self.arm_mode = not self.arm_mode
+                # if self.L1 and self.R1:
+                #     if [self.L1,self.R1] != self.prev_toggle:
+                #         self.arm_mode = not self.arm_mode
+                
+                #self.prev_toggle = [self.L1,self.R1]
 
-                if not self.arm_mode:
+                if [self.LT,self.LB,self.LL,self.LR] != self.prev_cmd:
                     self.rover_command()
-                elif self.arm_mode:
-                    self.arm_command()
+
+                # if not self.arm_mode:
+                #     self.rover_command()
+                # elif self.arm_mode:
+                #     self.arm_command()
+
+                self.prev_cmd = [self.LT,self.LB,self.LL,self.LR]
 
     def __repr__(self):
         return (f"=================\n\
@@ -255,8 +268,8 @@ class RemoteComms(Node):
             self.cmd_arm_grip_pub.publish(end_cmd)
 
     
-    def emergency_stop(self):
-        """Base code for this method, to be developed further"""
+    def emergency_stop(self, direct = True):
+        # Send 0 velocities when emergency stopped
         twist = Twist()
         self.cmd_vel_pub.publish(twist)
 
@@ -265,33 +278,33 @@ class RemoteComms(Node):
         end_cmd = Bool()
         end_cmd.data = False
         self.cmd_arm_grip_pub.publish(end_cmd)
-        raise EmStop("EMERGENCY! Stopping...")
+        if direct:
+            raise EmStop("EMERGENCY! Stopping...")
 
 def main(args=None):
     rclpy.init(args=args)
     node = RemoteComms()
 
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    except EmStop:
-        self.get_logger().error("Emergency stop triggered")
-    except StopWorthyException as e:
-        node.emergency_stop()
-        self.get_logger().error(f"Stopped because of error {e}")
-    except RetryWorthyException as e:
-        self.get_logger().error(f"Encountered error: {e}. Trying again")
-        while e != None:
-            try:
-                rclpy.spin(node) ##would this not just create an infinite loop?
-            except RetryWorthyException as e:
-                continue
-            # node.emergency_stop()
-    finally:
-        node.nh.stop()
-        node.destroy_node()
-        rclpy.shutdown()
+    while True:
 
+        try:
+            rclpy.spin(node)
+        except KeyboardInterrupt:
+            pass
+        except EmStop:
+            node.get_logger().error("Emergency stop triggered")
+            
+            break
+        except StopWorthyException as e:
+            node.emergency_stop(direct = False)
+            node.get_logger().error(f"Stopped because of error {e}")
+            break
+        except RetryWorthyException as e:
+            node.get_logger().error(f"Encountered error: {e}. Trying again")
+            pass
+                # node.emergency_stop()
+    node.nh.stop()
+    node.destroy_node()
+    rclpy.shutdown()
 if __name__ == '__main__':
     main()
