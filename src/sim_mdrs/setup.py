@@ -32,7 +32,7 @@ setup(
         'console_scripts': [
             'keyboard_control = sim_mdrs.keyboard_control:main',
             'keyboard_arm = sim_mdrs.keyboard_arm:main',
-            'remote_messages = sim_mdrs.remote_messages:main',
+            'remote_messages = sim_mdrs.remote_with_exceptions:main',
             'remote_arm = sim_mdrs.remote_arm:main',
             'diff_controller = sim_mdrs.diff_controller:main',
             'roboclaw_node = sim_mdrs.roboclaw_node:main',
