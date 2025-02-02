@@ -131,7 +131,7 @@ class RemoteComms(Node):
                 
                 #self.prev_toggle = [self.L1,self.R1]
 
-                if [self.LT,self.LB,self.LL,self.LR] != self.prev_cmd:
+                if [self.LT,self.LB,self.LL,self.LR,self.RB] != self.prev_cmd:
                     self.rover_command()
 
                 # if not self.arm_mode:
@@ -139,7 +139,7 @@ class RemoteComms(Node):
                 # elif self.arm_mode:
                 #     self.arm_command()
 
-                self.prev_cmd = [self.LT,self.LB,self.LL,self.LR]
+                self.prev_cmd = [self.LT,self.LB,self.LL,self.LR,self.RB]
 
     def __repr__(self):
         return (f"=================\n\
