@@ -30,7 +30,7 @@ class RemoteComms(Node):
         self.cmd_vel_pub = self.create_publisher(msg_type=Twist,topic="/cmd_vel",qos_profile=10)
         self.cmd_arm_motion_pub = self.create_publisher(msg_type=Quaternion,topic="/cmd_move_arm",qos_profile=10)
         self.cmd_arm_grip_pub = self.create_publisher(msg_type=Bool,topic="/cmd_grip_arm",qos_profile=10)
-        # self.telem_sub = self.create_subscription(msg_type=Float64,topic="/telemetry",qos_profile=10)
+        self.telem_sub = self.create_subscription(msg_type=Float64,topic="/telemetry",qos_profile=10) #probably will need many telemetry topics #create callback func for subscription
         """The queue size has been set to 10 for now, but it can be changed as necessary"""
         
         ## Next step is to create interface with comms protocol to get remote input and store it for the node to publish
@@ -62,6 +62,13 @@ class RemoteComms(Node):
         self.data = RemoteControl() #object to eventually store the message data when accessed
         
         self.e_stop = False #creating emergency stop attribute so that we know when that's been pressed
+
+        """Trying to integrate telemetry"""
+        self.telem_target = self.nh.getTelemWrap() #higher order structure for telem messages
+        self.telemessage = TelemMessage() #telem message object - still needs to be defined - might need several - can write to this object
+        
+
+
 
         """Q to ask: When writing in ROS, does everything that would otherwise be a regular variable, now become an attribute? - yes, for now"""
         ## Toggle to switch between different modes
@@ -280,6 +287,14 @@ class RemoteComms(Node):
         self.cmd_arm_grip_pub.publish(end_cmd)
         if direct:
             raise EmStop("EMERGENCY! Stopping...")
+        
+    def send_telem(self):
+        telem_data = self.telem_sub.read() #get telemetry data from subscriber
+
+        self.telemessage.variable = telem_data
+        self.telem_target.update(self.telemessage)
+        self.nh.pushTelemMessage()
+        self.nh.flush()
 
 def main(args=None):
     rclpy.init(args=args)
